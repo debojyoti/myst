@@ -38,7 +38,7 @@
             android:name=".DatazIntentService"
             android:enabled="true"
             android:exported="true"
-            android:stopWithTask="false"></service>
+            android:stopWithTask="false" />
 
         <receiver
             android:name=".AutoStart"
@@ -51,7 +51,8 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".test"></activity>
+        <activity android:name=".test" />
+        <activity android:name=".Recharge"></activity>
     </application>
 
 </manifest>

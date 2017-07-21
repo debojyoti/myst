@@ -1,5 +1,11 @@
 package com.example.mkz.dataz;
 
+
+/*      This is the main launching page which will divert user automatically based on data exhausted or not
+        --- @Debojyoti  */
+
+
+
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,7 +23,35 @@ public class Launch extends AppCompatActivity {
 
 
 
+        /*  This is the thread which will redirect the launching page to another activity after 1 second
 
+
+        * If data pack is exhausted, redirect to "Recharge.java" activity
+        * Otherwise redirect to "MainActivity.java" - the page contains usage information
+        *
+        * @ Debojyoti
+
+
+        * */
+
+        Thread th = new Thread()
+        {
+            @Override
+            public void run() {
+                try
+                {
+                    Thread.sleep(1000);
+
+                    Intent i = new Intent(Launch.this,Recharge.class);
+
+                    startActivity(i);
+                }
+                catch(Exception e)
+                {
+
+                }
+            }
+        };
 
     }
 }

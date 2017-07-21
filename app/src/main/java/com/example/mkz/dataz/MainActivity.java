@@ -1,8 +1,7 @@
 package com.example.mkz.dataz;
 
 
-/*      This is the main launching page which will divert user automatically based on data exhausted or not
-        --- @Debojyoti  */
+
 
 
 import android.support.v7.app.AppCompatActivity;
