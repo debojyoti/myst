@@ -36,5 +36,6 @@ public class Intro extends AppCompatActivity {
 
         Intent i = new Intent(Intro.this,Recharge.class);
         startActivity(i);
+        finish();
     }
 }
