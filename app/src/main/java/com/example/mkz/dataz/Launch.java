@@ -45,6 +45,7 @@ public class Launch extends AppCompatActivity {
                     Intent i = new Intent(Launch.this,Recharge.class);
 
                     startActivity(i);
+                    finish();
                 }
                 catch(Exception e)
                 {
@@ -52,6 +53,7 @@ public class Launch extends AppCompatActivity {
                 }
             }
         };
+        th.start();
 
     }
 }
