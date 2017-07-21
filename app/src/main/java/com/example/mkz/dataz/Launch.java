@@ -15,7 +15,31 @@ public class Launch extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
 
-        final EditText pack = (EditText) findViewById(R.id.packsize);
+
+
+
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*                          abandoned code              */
+
+/* final EditText pack = (EditText) findViewById(R.id.packsize);
         Button proceed = (Button) findViewById(R.id.proceed);
 
         proceed.setOnClickListener(new View.OnClickListener() {
@@ -33,6 +57,4 @@ public class Launch extends AppCompatActivity {
                 startActivity(intent);
 
             }
-        });
-    }
-}
+        });*/

@@ -6,9 +6,9 @@
     <!-- following two lines are for data permission -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACTION_MANAGE_NETWORK_USAGE"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-
+    <uses-permission android:name="android.permission.ACTION_MANAGE_NETWORK_USAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -19,7 +19,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MANAGE_NETWORK_USAGE"/>
+                <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
             </intent-filter>
         </activity>
         <activity android:name=".Launch">
@@ -35,21 +35,23 @@
         </activity>
 
         <service
-            android:stopWithTask="false"
-            android:enabled="true"
             android:name=".DatazIntentService"
-            android:exported="true">
-        </service>
+            android:enabled="true"
+            android:exported="true"
+            android:stopWithTask="false"></service>
 
-        <receiver android:name=".AutoStart"
+        <receiver
+            android:name=".AutoStart"
             android:enabled="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+        <activity android:name=".test"></activity>
     </application>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
 
 </manifest>

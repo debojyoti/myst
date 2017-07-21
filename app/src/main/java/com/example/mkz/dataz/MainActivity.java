@@ -1,5 +1,30 @@
 package com.example.mkz.dataz;
 
+
+/*      This is the main launching page which will divert user automatically based on data exhausted or not
+        --- @Debojyoti  */
+
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_test);
+
+        Thread divert = new Thread();
+
+    }
+}
+
+/*                      Garaged Code
+
+
+
+
 import android.app.usage.NetworkStatsManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -262,4 +287,4 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-}
+}*/
