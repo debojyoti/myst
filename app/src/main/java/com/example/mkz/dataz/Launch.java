@@ -9,10 +9,6 @@ package com.example.mkz.dataz;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 
 public class Launch extends AppCompatActivity {
 
@@ -45,7 +41,9 @@ public class Launch extends AppCompatActivity {
                     Intent i = new Intent(Launch.this,Recharge.class);
 
                     startActivity(i);
-                    finish();
+
+
+                    finish();   //  while it redirect to new activity , this (current) activity will be destroyed : @ Debojyoti
                 }
                 catch(Exception e)
                 {
