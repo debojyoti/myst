@@ -1,0 +1,8 @@
+
+
+Myst Project Files' Details
+
+
+1) Launch.java 				 :  Launching Page, redirect    (to Recharge.java or MainActivity.java)    based on data exhausted or not
+2) Recharge.java				 :  When no data is left, this page will be redirected by Launch page, where new recharge's data should be entered
+3) MainActivity				 :  It's the usage details page, which will be redirected if data is not exhausted completely
