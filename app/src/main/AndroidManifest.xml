@@ -51,7 +51,8 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".Recharge"></activity>
+        <activity android:name=".Recharge" />
+        <activity android:name=".Intro"></activity>
     </application>
 
 </manifest>

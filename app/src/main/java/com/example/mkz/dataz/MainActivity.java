@@ -1,6 +1,18 @@
 package com.example.mkz.dataz;
 
+/*
 
+        Here the usage details will be shown to the user
+
+         1) Used Data
+         2) Remaining Data
+         3) Total Data
+         4) Burn rate (per hour) from the time of recharge
+         5) Estimated time remaining as per current burn rate
+
+            @ Debojyoti
+
+ */
 
 
 
@@ -14,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Thread divert = new Thread();
+
 
     }
 }

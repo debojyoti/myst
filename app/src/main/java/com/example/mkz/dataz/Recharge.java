@@ -2,7 +2,8 @@ package com.example.mkz.dataz;
 
 
 /*
-        This activity will take data amount and type(gb/mb) from user as a new recharge and will save it into the file "RechargeData.txt"
+        This activity will take data amount, data type(gb/mb) and validity (in days) from user as a new recharge
+        and will save it into the file "RechargeData.txt"
 
         The stored data (in the file) will be in bytes
 
@@ -38,8 +39,10 @@ public class Recharge extends AppCompatActivity {
     Button addData;
     TextView errorDisp;
     EditText getRechargeAmount;
+    EditText validity;
     int data = -1;
     String dSize;
+    String date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,7 @@ public class Recharge extends AppCompatActivity {
         addData = (Button) findViewById(R.id.rechargeBtn);
         errorDisp = (TextView) findViewById(R.id.errorDisp);
         getRechargeAmount = (EditText) findViewById(R.id.getRechargeAmount);
+        validity = (EditText) findViewById(R.id.validity);
         getRechargeAmount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -58,16 +62,23 @@ public class Recharge extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 dSize = getRechargeAmount.getText().toString();
-
+                date = validity.getText().toString();
                 if (dSize.equals("") || dSize.equals("0")) {
                     errorDisp.setText("Enter a valid Amount of Data");
 
                 } else {
                     errorDisp.setText("");
-                    if (data == -1) {
-                        errorDisp.setText("Enter data type : GB/MB?");
-                    } else {
-                        addValidDataToFile();
+                    if(date.equals("") || date.equals("0"))
+                    {
+                        errorDisp.setText("Validity must be greater than 0");
+                    }
+                    else
+                    {
+                        if (data == -1) {
+                            errorDisp.setText("Enter data type : GB/MB?");
+                        } else {
+                            addValidDataToFile();
+                        }
                     }
                 }
             }
@@ -90,6 +101,11 @@ public class Recharge extends AppCompatActivity {
                     data = 0;
                     break;
         }
+    }
+    public void showUsage(View v)
+    {
+        Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",1);  // TYPE = 0 means no recharge
+        startActivity(i);
     }
 
 /* *************************   Getting valid input (Ends)  ******************************* */
@@ -122,13 +138,18 @@ public class Recharge extends AppCompatActivity {
                newData = newData*1024*1024*1024;
                System.out.println("Entered Data in bytes = "+newData);
            }
-
            String data = String.valueOf(newData);
-
            byte buf[] = data.getBytes();
-
            fileOutputStream.write(buf);
            fileOutputStream.close();
+
+
+
+
+
+
+
+
        }
        catch (Exception e)
        {
@@ -136,7 +157,7 @@ public class Recharge extends AppCompatActivity {
        }
        /*           Send to the usage page  (to MainActivity.java)          */
 
-        Intent i = new Intent(Recharge.this,MainActivity.class);
+        Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",1);  // TYPE = 1 means new recharge
         startActivity(i);
     }
 
