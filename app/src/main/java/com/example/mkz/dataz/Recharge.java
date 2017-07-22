@@ -17,6 +17,7 @@ package com.example.mkz.dataz;
 
 
 import android.content.Intent;
+import android.net.TrafficStats;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -43,6 +44,7 @@ public class Recharge extends AppCompatActivity {
     int data = -1;
     String dSize;
     String date;
+    long dataSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,18 +95,18 @@ public class Recharge extends AppCompatActivity {
             case R.id.gb:
                 if (checked)
                     System.out.println("Data selected as : GB");
-                    data = 1;
-                    break;
+                data = 1;
+                break;
             case R.id.mb:
                 if (checked)
                     System.out.println("Data selected as : MB");
-                    data = 0;
-                    break;
+                data = 0;
+                break;
         }
     }
     public void showUsage(View v)
     {
-        Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",1);  // TYPE = 0 means no recharge
+        Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",0);  // TYPE = 0 means no recharge
         startActivity(i);
     }
 
@@ -123,25 +125,26 @@ public class Recharge extends AppCompatActivity {
 
     public void addValidDataToFile()
     {
-       try
-       {
-           String FILENAME = "RechargeData.txt";
-           FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
-           long newData = (long) Integer.parseInt(dSize);
-           if(data==0)      // It signifies that MB is selected by the user
-           {
-               newData = newData*1024*1024;
-               System.out.println("Entered Data in bytes = "+newData);
-           }
-           else             // It signifies that GB is selected by the user
-           {
-               newData = newData*1024*1024*1024;
-               System.out.println("Entered Data in bytes = "+newData);
-           }
-           String data = String.valueOf(newData);
-           byte buf[] = data.getBytes();
-           fileOutputStream.write(buf);
-           fileOutputStream.close();
+        try
+        {
+            String FILENAME = "RechargeData.txt";
+            FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+            long newData = (long) Integer.parseInt(dSize);
+            if(data==0)      // It signifies that MB is selected by the user
+            {
+                newData = newData*1024*1024;
+                System.out.println("Entered Data in bytes = "+newData);
+            }
+            else             // It signifies that GB is selected by the user
+            {
+                newData = newData*1024*1024*1024;
+                System.out.println("Entered Data in bytes = "+newData);
+            }
+            dataSize = newData;
+            String data = String.valueOf(newData);
+            byte buf[] = data.getBytes();
+            fileOutputStream.write(buf);
+            fileOutputStream.close();
 
 
 
@@ -150,13 +153,52 @@ public class Recharge extends AppCompatActivity {
 
 
 
-       }
-       catch (Exception e)
-       {
+        }
+        catch (Exception e)
+        {
 
-       }
-       /*           Send to the usage page  (to MainActivity.java)          */
+        }
 
+        try
+        {
+            String s1 = String.valueOf(dataSize);
+            String FILENAME = "Remaining.txt";
+
+            FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+
+            byte buf[] = s1.getBytes();
+
+            fileOutputStream.write(buf);
+            fileOutputStream.close();
+        }
+        catch (Exception e)
+        {
+
+        }
+
+
+
+        /* **************** Taking rx+tx at the time of recharge  Starts******************* */
+        try
+        {
+            String FILENAME = "Initial.txt";
+            long rxbytes = TrafficStats.getMobileRxBytes();
+            long txbytes = TrafficStats.getMobileTxBytes();
+            long totalbytes = rxbytes+txbytes;
+            FileOutputStream fileOutputStream2 = openFileOutput(FILENAME,MODE_PRIVATE);
+            byte[] buf = String.valueOf(totalbytes).getBytes();
+            fileOutputStream2.write(buf);
+            fileOutputStream2.close();
+        }
+        catch (Exception e)
+        {
+
+        }
+        /* **************** Taking rx+tx at the time of recharge  Ends******************* */
+
+
+
+        /*           Send to the usage page  (to MainActivity.java)          */
         Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",1);  // TYPE = 1 means new recharge
         startActivity(i);
     }

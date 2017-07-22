@@ -4,9 +4,9 @@ package com.example.mkz.dataz;
 
         Here the usage details will be shown to the user
 
-         1) Used Data
-         2) Remaining Data
-         3) Total Data
+         1) Used Data           (keep reading in the handler)
+         2) Remaining Data      (keep reading in the handler)
+         3) Total Data          (Read Once)
          4) Burn rate (per hour) from the time of recharge
          5) Estimated time remaining as per current burn rate
 
@@ -16,10 +16,99 @@ package com.example.mkz.dataz;
 
 
 
+import android.net.TrafficStats;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.TextView;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity {
+
+    public long rxbytes;
+    public long txbytes;
+    public long totalbytes;
+    public long used;
+    public long initial;
+    public long DataPack;
+    public long remaining;
+
+
+
+    Handler hd1= new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg) {
+
+
+             /* ******************   Read used data from Used.txt  (Starts) ************************************** */
+            try
+            {
+                String FILENAME = "Used.txt";      // File contains Initial Rx+Tx value at the time of recharge
+                FileInputStream fis = openFileInput(FILENAME);
+
+                int read=-1;
+                StringBuffer buffer = new StringBuffer();
+                while((read=fis.read())!=-1)
+                {
+                    buffer.append((char)read);
+                }
+                String pack = (buffer.toString());     // Read value stored in this String
+                used = Long.parseLong(pack);
+                fis.close();
+            }
+            catch (Exception e)
+            {
+
+            }
+       /* ******************   Read datapack value once  (Ends) ************************************** */
+
+
+
+
+                    /* ******************   Read remaining data from Remaining.txt  (Starts) ************************************** */
+            try
+            {
+                String FILENAME = "Remaining.txt";      // File contains Initial Rx+Tx value at the time of recharge
+                FileInputStream fis = openFileInput(FILENAME);
+
+                int read=-1;
+                StringBuffer buffer = new StringBuffer();
+                while((read=fis.read())!=-1)
+                {
+                    buffer.append((char)read);
+                }
+                String pack = (buffer.toString());     // Read value stored in this String
+                remaining = Long.parseLong(pack);
+                fis.close();
+            }
+            catch (Exception e)
+            {
+
+            }
+       /* ******************   Read datapack value once  (Ends) ************************************** */
+
+
+
+            TextView usedData = (TextView) findViewById(R.id.Dataused);
+            TextView dataRemaining = (TextView) findViewById(R.id.dataRemaining);
+            TextView dataPack = (TextView) findViewById(R.id.DataPack);
+
+            long MBused,MBremaining,MBpack;
+
+            MBpack = ((DataPack/1024)/1024);
+            MBremaining = ((remaining/1024)/1024);
+            MBused = ((used/1024)/1024);
+
+            usedData.setText(String.valueOf(MBused)+" MB");
+            dataRemaining.setText(String.valueOf(MBremaining)+" MB");
+            dataPack.setText(String.valueOf(MBpack)+" MB");
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +116,48 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
+
+        /* ******************   Read datapack value once  (Starts) ************************************** */
+        try
+        {
+            String FILENAME = "RechargeData.txt";      // File contains Initial Rx+Tx value at the time of recharge
+            FileInputStream fis = openFileInput(FILENAME);
+
+            int read=-1;
+            StringBuffer buffer = new StringBuffer();
+            while((read=fis.read())!=-1)
+            {
+                buffer.append((char)read);
+            }
+            String pack = (buffer.toString());     // Read value stored in this String
+            DataPack = Long.parseLong(pack);
+            fis.close();
+        }
+        catch (Exception e)
+        {
+
+        }
+       /* ******************   Read datapack value once  (Ends) ************************************** */
+
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                while (true)
+                {
+                    try {
+                        Thread.sleep(1000);
+                        hd1.sendEmptyMessage(0);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        Thread th = new Thread(r);
+        th.start();
 
     }
 }
