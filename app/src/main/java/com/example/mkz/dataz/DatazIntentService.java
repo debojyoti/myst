@@ -37,11 +37,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.text.format.DateFormat;
 import android.widget.Toast;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Method;
+import java.util.Date;
 
 
 public class DatazIntentService extends IntentService {
@@ -54,6 +56,7 @@ public class DatazIntentService extends IntentService {
     public double DataPack;
     public double remaining;
     public double lastBootData;
+    public String expday;
 
     String savedata;
 
@@ -69,10 +72,144 @@ public class DatazIntentService extends IntentService {
 
 
 
+            Date d = new Date(new Date().getTime());
+            String sysDate  = (String) DateFormat.format("dd", d.getTime());
+            String curDate = "";
+            try
+            {
+                String FILENAME22 = "CurrentDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
+                FileInputStream fis22 = openFileInput(FILENAME22);
+
+                int read=-1;
+                StringBuffer buffer = new StringBuffer();
+                while((read=fis22.read())!=-1)
+                {
+                    buffer.append((char)read);
+                }
+                curDate = (buffer.toString());     // Read value stored in this String
+
+                fis22.close();
+            }
+            catch (Exception e)
+            {
+
+            }
+            if(!sysDate.equals(curDate))
+            {
+                int sd,cd,diff;
+                String savedDays="";
+                sd = Integer.parseInt(sysDate);
+                cd = Integer.parseInt(curDate);
+
+                diff=sd-cd;
+
+                try
+                {
+                    String FILENAME = "ExpDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
+                    FileInputStream fis = openFileInput(FILENAME);
+
+                    int read=-1;
+                    StringBuffer buffer = new StringBuffer();
+                    while((read=fis.read())!=-1)
+                    {
+                        buffer.append((char)read);
+                    }
+                    savedDays = (buffer.toString());     // Read value stored in this String
+
+                    fis.close();
+                }
+                catch (Exception e)
+                {
+
+                }
+
+                try
+                {
+
+                    String FILENAME33 = "ExpDate.txt";
+
+                    FileOutputStream fileOutputStream33 = openFileOutput(FILENAME33,MODE_PRIVATE);
+
+                    byte buf[] = String.valueOf(Integer.parseInt(savedDays)-diff).getBytes();
+
+                    fileOutputStream33.write(buf);
+                    fileOutputStream33.close();
+                }
+                catch (Exception e)
+                {
+
+                }
+
+            }
+            Date d1 = new Date(new Date().getTime());
+            String sysTime  = (String) DateFormat.format("HHmmss", d1.getTime());
+
+
+            if(sysTime.equals("000000"))
+            {
+                String storedDay="";
+                try
+                {
+                    String FILENAME = "ExpDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
+                    FileInputStream fis = openFileInput(FILENAME);
+
+                    int read=-1;
+                    StringBuffer buffer = new StringBuffer();
+                    while((read=fis.read())!=-1)
+                    {
+                        buffer.append((char)read);
+                    }
+                    storedDay = (buffer.toString());     // Read value stored in this String
+                    expday = storedDay;
+                    fis.close();
+                }
+                catch (Exception e)
+                {
+
+                }
+
+                try
+                {
+
+                    String FILENAME33 = "ExpDate.txt";
+
+                    FileOutputStream fileOutputStream33 = openFileOutput(FILENAME33,MODE_PRIVATE);
+
+                    byte buf[] = String.valueOf(Integer.parseInt(storedDay)-1).getBytes();
+
+                    fileOutputStream33.write(buf);
+                    fileOutputStream33.close();
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            try
+            {
+                String FILENAME = "ExpDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
+                FileInputStream fis = openFileInput(FILENAME);
+
+                int read=-1;
+                StringBuffer buffer = new StringBuffer();
+                while((read=fis.read())!=-1)
+                {
+                    buffer.append((char)read);
+                }
+                expday = (buffer.toString());     // Read value stored in this String
+                fis.close();
+            }
+            catch (Exception e)
+            {
+
+            }
+
             boolean dataEnabled = isMobileDataEnabled();
             System.out.println("\nservice running, data = "+String.valueOf(dataEnabled)+"\n");
+            System.out.println("\nservice running, data reamining = "+String.valueOf(remaining)+"\n");
 
-            if(dataEnabled && DataPack!=0)
+            if(dataEnabled && (((int)remaining)>=1200) && !expday.equals("0"))
             {
                 rxbytes = TrafficStats.getMobileRxBytes();
                 txbytes = TrafficStats.getMobileTxBytes();
@@ -182,7 +319,33 @@ public class DatazIntentService extends IntentService {
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
 
+
+        try
+        {
+            String FILENAME = "Remaining.txt";      // File contains Initial Rx+Tx value at the time of recharge
+            FileInputStream fis = openFileInput(FILENAME);
+
+            int read=-1;
+            StringBuffer buffer = new StringBuffer();
+            while((read=fis.read())!=-1)
+            {
+                buffer.append((char)read);
+            }
+            String pack = (buffer.toString());     // Read value stored in this String
+            remaining = Double.parseDouble(pack);
+            fis.close();
+        }
+        catch (Exception e)
+        {
+
+        }
+
         lastBootData=0;
+
+
+        rxbytes = TrafficStats.getMobileRxBytes();
+        txbytes = TrafficStats.getMobileTxBytes();
+        totalbytes = rxbytes+txbytes;
 
         try
         {

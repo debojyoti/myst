@@ -20,12 +20,14 @@ import android.content.Intent;
 import android.net.TrafficStats;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import java.io.FileOutputStream;
+import java.util.Date;
 
 public class Recharge extends AppCompatActivity {
 
@@ -153,6 +155,39 @@ public class Recharge extends AppCompatActivity {
 
 
 
+        }
+        catch (Exception e)
+        {
+
+        }
+        try
+        {
+
+            String FILENAME33 = "ExpDate.txt";
+
+            FileOutputStream fileOutputStream33 = openFileOutput(FILENAME33,MODE_PRIVATE);
+
+            byte buf[] = date.getBytes();
+
+            fileOutputStream33.write(buf);
+            fileOutputStream33.close();
+        }
+        catch (Exception e)
+        {
+
+        }
+        try
+        {
+
+            String FILENAME44 = "CurrentDate.txt";
+
+            FileOutputStream fileOutputStream44 = openFileOutput(FILENAME44,MODE_PRIVATE);
+            Date d = new Date(new Date().getTime());
+            String cDate  = (String) DateFormat.format("dd", d.getTime());
+            byte buf[] = cDate.getBytes();
+
+            fileOutputStream44.write(buf);
+            fileOutputStream44.close();
         }
         catch (Exception e)
         {

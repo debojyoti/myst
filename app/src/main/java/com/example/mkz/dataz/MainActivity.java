@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     public double initial;
     public double DataPack;
     public double remaining;
+    public String storedDay;
 
 
 
@@ -43,6 +44,32 @@ public class MainActivity extends AppCompatActivity {
     {
         @Override
         public void handleMessage(Message msg) {
+
+
+
+
+
+            try
+            {
+                String FILENAME = "ExpDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
+                FileInputStream fis = openFileInput(FILENAME);
+
+                int read=-1;
+                StringBuffer buffer = new StringBuffer();
+                while((read=fis.read())!=-1)
+                {
+                    buffer.append((char)read);
+                }
+                storedDay = (buffer.toString());     // Read value stored in this String
+
+                fis.close();
+            }
+            catch (Exception e)
+            {
+
+            }
+
+
 
              /* ******************   Read used data from Used.txt  (Starts) ************************************** */
             try
@@ -96,6 +123,8 @@ public class MainActivity extends AppCompatActivity {
             TextView usedData = (TextView) findViewById(R.id.Dataused);
             TextView dataRemaining = (TextView) findViewById(R.id.dataRemaining);
             TextView dataPack = (TextView) findViewById(R.id.DataPack);
+            TextView dateReamining = (TextView) findViewById(R.id.dateRemaining);
+
 
             double MBused,MBremaining,MBpack;
 
@@ -104,8 +133,24 @@ public class MainActivity extends AppCompatActivity {
             MBused = ((used/1024)/1024);
 
             usedData.setText(String.format("%.2f",MBused)+" MB");
-            dataRemaining.setText(String.format("%.2f",MBremaining)+" MB");
+            if(String.format("%.0f",MBremaining).equals("0") || (int)MBremaining<=0)
+            {
+                dataRemaining.setText("Data Pack Exhausted!");
+            }
+            else
+            {
+                dataRemaining.setText(String.format("%.2f",MBremaining)+" MB");
+            }
+
             dataPack.setText(String.format("%.2f",MBpack)+" MB");
+            if(storedDay.equals("0"))
+            {
+                dateReamining.setText("Data pack expired!");
+            }
+            else
+            {
+                dateReamining.setText(storedDay+" days");
+            }
 
         }
     };
