@@ -3,14 +3,17 @@ package com.example.mkz.dataz;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.net.TrafficStats;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.reflect.Method;
 
 
 public class DatazIntentService extends IntentService {
@@ -34,58 +37,69 @@ public class DatazIntentService extends IntentService {
         @Override
         public void handleMessage(Message msg) {
 
-            rxbytes = TrafficStats.getMobileRxBytes();
-            txbytes = TrafficStats.getMobileTxBytes();
-            totalbytes = rxbytes+txbytes;
-            used = totalbytes-initial;          //          Used data from last recharge
-            String s;
-            if(rxbytes == TrafficStats.UNSUPPORTED || txbytes == TrafficStats.UNSUPPORTED)
+
+
+
+            boolean dataEnabled = isMobileDataEnabled();
+            System.out.println("\nservice running, data = "+String.valueOf(dataEnabled)+"\n");
+
+            if(dataEnabled)
             {
-                s="Unsupported";
+                rxbytes = TrafficStats.getMobileRxBytes();
+                txbytes = TrafficStats.getMobileTxBytes();
+                totalbytes = rxbytes+txbytes;
+                used = totalbytes-initial;          //          Used data from last recharge
+                String s;
+                if(rxbytes == TrafficStats.UNSUPPORTED || txbytes == TrafficStats.UNSUPPORTED)
+                {
+                    s="Unsupported";
+                }
+                else
+                {
+                    s=String.valueOf(totalbytes);
+                }
+
+                s = String.valueOf(used);
+
+                if(s!="0")
+                {
+                    savedata = s;
+                    try
+                    {
+                        String FILENAME = "Used.txt";
+
+                        FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+
+                        byte buf[] = savedata.getBytes();
+
+                        fileOutputStream.write(buf);
+                        fileOutputStream.close();
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+                    try
+                    {
+                        remaining = DataPack-used;
+                        String s1 = String.valueOf(remaining);
+                        String FILENAME = "Remaining.txt";
+
+                        FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+
+                        byte buf[] = s1.getBytes();
+
+                        fileOutputStream.write(buf);
+                        fileOutputStream.close();
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+                }
             }
-            else
-            {
-                s=String.valueOf(totalbytes);
-            }
 
-            s = String.valueOf(used);
 
-            if(s!="0")
-            {
-                savedata = s;
-                try
-                {
-                    String FILENAME = "Used.txt";
-
-                    FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
-
-                    byte buf[] = savedata.getBytes();
-
-                    fileOutputStream.write(buf);
-                    fileOutputStream.close();
-                }
-                catch (Exception e)
-                {
-
-                }
-                try
-                {
-                    remaining = DataPack-used;
-                    String s1 = String.valueOf(used);
-                    String FILENAME = "Remaining.txt";
-
-                    FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
-
-                    byte buf[] = s1.getBytes();
-
-                    fileOutputStream.write(buf);
-                    fileOutputStream.close();
-                }
-                catch (Exception e)
-                {
-
-                }
-            }
 
         }
     };
@@ -119,7 +133,7 @@ public class DatazIntentService extends IntentService {
         }
         try
         {
-            String FILENAME = "RechargeData.txt";      // File contains Initial Rx+Tx value at the time of recharge
+            String FILENAME = "RechargeData.txt";      // The amount of data recharged by the user
             FileInputStream fis = openFileInput(FILENAME);
 
             int read=-1;
@@ -161,6 +175,21 @@ public class DatazIntentService extends IntentService {
         th.start();
 
         return START_STICKY;
+    }
+
+    public Boolean isMobileDataEnabled(){
+        Object connectivityService = getSystemService(CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) connectivityService;
+
+        try {
+            Class<?> c = Class.forName(cm.getClass().getName());
+            Method m = c.getDeclaredMethod("getMobileDataEnabled");
+            m.setAccessible(true);
+            return (Boolean)m.invoke(cm);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

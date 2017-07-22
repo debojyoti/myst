@@ -16,6 +16,7 @@ package com.example.mkz.dataz;
 
 
 
+import android.content.Intent;
 import android.net.TrafficStats;
 import android.os.Handler;
 import android.os.Message;
@@ -42,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     {
         @Override
         public void handleMessage(Message msg) {
-
 
              /* ******************   Read used data from Used.txt  (Starts) ************************************** */
             try
@@ -104,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
             MBused = ((used/1024)/1024);
 
             usedData.setText(String.valueOf(MBused)+" MB");
-            dataRemaining.setText(String.valueOf(MBremaining)+" MB");
-            dataPack.setText(String.valueOf(MBpack)+" MB");
+            dataRemaining.setText(String.valueOf(MBremaining)+" MB2");
+            dataPack.setText(String.valueOf(MBpack)+" MB3");
 
         }
     };
@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
 
 
@@ -155,6 +156,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+        Intent intent2 = new Intent(MainActivity.this,DatazIntentService.class);
+        startService(intent2);
 
         Thread th = new Thread(r);
         th.start();
