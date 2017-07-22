@@ -104,8 +104,8 @@ public class MainActivity extends AppCompatActivity {
             MBused = ((used/1024)/1024);
 
             usedData.setText(String.format("%.2f",MBused)+" MB");
-            dataRemaining.setText(String.format("%.2f",MBremaining)+" MB2");
-            dataPack.setText(String.format("%.2f",MBpack)+" MB3");
+            dataRemaining.setText(String.format("%.2f",MBremaining)+" MB");
+            dataPack.setText(String.format("%.2f",MBpack)+" MB");
 
         }
     };

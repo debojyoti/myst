@@ -72,7 +72,7 @@ public class DatazIntentService extends IntentService {
             boolean dataEnabled = isMobileDataEnabled();
             System.out.println("\nservice running, data = "+String.valueOf(dataEnabled)+"\n");
 
-            if(dataEnabled)
+            if(dataEnabled && DataPack!=0)
             {
                 rxbytes = TrafficStats.getMobileRxBytes();
                 txbytes = TrafficStats.getMobileTxBytes();
