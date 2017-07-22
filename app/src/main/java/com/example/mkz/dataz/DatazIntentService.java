@@ -1,5 +1,33 @@
 package com.example.mkz.dataz;
 
+
+/*
+
+
+    *****       This is the "Myst Data Engine", it is basically a sticky service(a service that can't be killed, even when
+    the application is not running. It also starts automatically when the device boots up.     ******
+    
+    This is the main thread which will be running all the time to trace data usage and keep updating the 
+    following files (marked with *) :-
+    
+            1) *Initial.txt      =       It stores device's totalTxBytes from when myst starts data counting
+            2) Recharge.txt      =       It stores the data pack's value (entered by user)
+            3) *Used.txt         =       It stores used data since last recharge (Current system's TotalRxBytes - Initial)
+            4) *Remaining.txt    =       It stores the remaining data (Recharge - Used)
+            
+            *** Note : All these files contains values in terms of bytes
+             
+                                                                                ---- @ Debojyoti
+
+
+
+
+
+ */
+
+
+
+
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
@@ -18,13 +46,14 @@ import java.lang.reflect.Method;
 
 public class DatazIntentService extends IntentService {
 
-    public long rxbytes;
-    public long txbytes;
-    public long totalbytes;
-    public long used;
-    public long initial;
-    public long DataPack;
-    public long remaining;
+    public double rxbytes;
+    public double txbytes;
+    public double totalbytes;
+    public double used;
+    public double initial;
+    public double DataPack;
+    public double remaining;
+    public double lastBootData;
 
     String savedata;
 
@@ -48,7 +77,48 @@ public class DatazIntentService extends IntentService {
                 rxbytes = TrafficStats.getMobileRxBytes();
                 txbytes = TrafficStats.getMobileTxBytes();
                 totalbytes = rxbytes+txbytes;
-                used = totalbytes-initial;          //          Used data from last recharge
+
+                if(totalbytes<initial)
+                {
+
+                    try
+                    {
+                        String FILENAME22 = "Used.txt";      // File contains Initial Rx+Tx value at the time of recharge
+                        FileInputStream fis22 = openFileInput(FILENAME22);
+
+                        int read=-1;
+                        StringBuffer buffer = new StringBuffer();
+                        while((read=fis22.read())!=-1)
+                        {
+                            buffer.append((char)read);
+                        }
+                        String pack = (buffer.toString());     // Read value stored in this String
+                        lastBootData = Double.parseDouble(pack);
+                        fis22.close();
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+
+
+                    try
+                    {
+                        String FILENAME11 = "Initial.txt";
+                        /*double rxbytes1 = TrafficStats.getMobileRxBytes();
+                        double txbytes1 = TrafficStats.getMobileTxBytes();
+                        double totalbytes1 = rxbytes1+txbytes1;*/
+                        FileOutputStream fileOutputStream21 = openFileOutput(FILENAME11,MODE_PRIVATE);
+                        byte[] buf = "0".getBytes();
+                        fileOutputStream21.write(buf);
+                        fileOutputStream21.close();
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+                }
+                used = lastBootData+(totalbytes-initial);          //          Used data from last recharge
                 String s;
                 if(rxbytes == TrafficStats.UNSUPPORTED || txbytes == TrafficStats.UNSUPPORTED)
                 {
@@ -112,6 +182,8 @@ public class DatazIntentService extends IntentService {
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
 
+        lastBootData=0;
+
         try
         {
             String FILENAME = "Initial.txt";      // File contains Initial Rx+Tx value at the time of recharge
@@ -124,7 +196,7 @@ public class DatazIntentService extends IntentService {
                 buffer.append((char)read);
             }
             String remaining = (buffer.toString());     // Read value stored in this String
-            initial = Long.parseLong(remaining);
+            initial = Double.parseDouble(remaining);
             fis.close();
         }
         catch(Exception e)
@@ -143,7 +215,7 @@ public class DatazIntentService extends IntentService {
                 buffer.append((char)read);
             }
             String pack = (buffer.toString());     // Read value stored in this String
-            DataPack = Long.parseLong(pack);
+            DataPack = Double.parseDouble(pack);
             fis.close();
         }
         catch(Exception e)

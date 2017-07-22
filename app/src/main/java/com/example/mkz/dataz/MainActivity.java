@@ -29,13 +29,13 @@ import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
-    public long rxbytes;
-    public long txbytes;
-    public long totalbytes;
-    public long used;
-    public long initial;
-    public long DataPack;
-    public long remaining;
+    public double rxbytes;
+    public double txbytes;
+    public double totalbytes;
+    public double used;
+    public double initial;
+    public double DataPack;
+    public double remaining;
 
 
 
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
                     buffer.append((char)read);
                 }
                 String pack = (buffer.toString());     // Read value stored in this String
-                used = Long.parseLong(pack);
+                used = Double.parseDouble(pack);
                 fis.close();
             }
             catch (Exception e)
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                     buffer.append((char)read);
                 }
                 String pack = (buffer.toString());     // Read value stored in this String
-                remaining = Long.parseLong(pack);
+                remaining = Double.parseDouble(pack);
                 fis.close();
             }
             catch (Exception e)
@@ -97,15 +97,15 @@ public class MainActivity extends AppCompatActivity {
             TextView dataRemaining = (TextView) findViewById(R.id.dataRemaining);
             TextView dataPack = (TextView) findViewById(R.id.DataPack);
 
-            long MBused,MBremaining,MBpack;
+            double MBused,MBremaining,MBpack;
 
             MBpack = ((DataPack/1024)/1024);
             MBremaining = ((remaining/1024)/1024);
             MBused = ((used/1024)/1024);
 
-            usedData.setText(String.valueOf(MBused)+" MB");
-            dataRemaining.setText(String.valueOf(MBremaining)+" MB2");
-            dataPack.setText(String.valueOf(MBpack)+" MB3");
+            usedData.setText(String.format("%.2f",MBused)+" MB");
+            dataRemaining.setText(String.format("%.2f",MBremaining)+" MB2");
+            dataPack.setText(String.format("%.2f",MBpack)+" MB3");
 
         }
     };
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 buffer.append((char)read);
             }
             String pack = (buffer.toString());     // Read value stored in this String
-            DataPack = Long.parseLong(pack);
+            DataPack = Double.parseDouble(pack);
             fis.close();
         }
         catch (Exception e)
@@ -204,8 +204,8 @@ import static android.R.attr.start;
 public class MainActivity extends AppCompatActivity {
 
     private Handler handler = new Handler();
-    private long mStartRX = 0;
-    private long mStartTX = 0;
+    private double mStartRX = 0;
+    private double mStartTX = 0;
     private String packval;
 
 
@@ -218,12 +218,12 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             TextView total= (TextView) findViewById(R.id.total);
             TextView dataval = (TextView) findViewById(R.id.dataval);
-            long rxBytes = TrafficStats.getMobileRxPackets()-mStartRX;
-            long txBytes = TrafficStats.getMobileTxPackets()-mStartTX;
+            double rxBytes = TrafficStats.getMobileRxPackets()-mStartRX;
+            double txBytes = TrafficStats.getMobileTxPackets()-mStartTX;
 
-            long totalBytes = Long.parseLong(my_file_read());// reads totalbytes from file
-            long sizeofpack = Long.parseLong(packval);
-            long remainingdata = sizeofpack-totalBytes;
+            double totalBytes = double.parsedouble(my_file_read());// reads totalbytes from file
+            double sizeofpack = double.parsedouble(packval);
+            double remainingdata = sizeofpack-totalBytes;
 
 
             total.setText("Total Data :"+bytesToHuman((totalBytes)));
@@ -337,14 +337,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 // [custom function] converts bytes To Human readable form
-    public static String bytesToHuman (long size)
+    public static String bytesToHuman (double size)
     {
-        long Kb = 1  * 1024;
-        long Mb = Kb * 1024;
-        long Gb = Mb * 1024;
-        long Tb = Gb * 1024;
-        long Pb = Tb * 1024;
-        long Eb = Pb * 1024;
+        double Kb = 1  * 1024;
+        double Mb = Kb * 1024;
+        double Gb = Mb * 1024;
+        double Tb = Gb * 1024;
+        double Pb = Tb * 1024;
+        double Eb = Pb * 1024;
 
         if (size <  Kb)                 return floatForm(        size     ) + " byte";
         if (size >= Kb && size < Mb)    return floatForm((double)size / Kb) + " Kb";
@@ -391,8 +391,8 @@ public class MainActivity extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
         packval = bundle.getString("packval");
-        Long packval_in_long = Long.parseLong(packval);
-        String packval_in_bytesToHuman = bytesToHuman(packval_in_long);
+        double packval_in_double = double.parsedouble(packval);
+        String packval_in_bytesToHuman = bytesToHuman(packval_in_double);
         sizepack.setText("Pack Size = "+packval_in_bytesToHuman);
 
 
@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                    showtv.setText(bytesToHuman(Long.parseLong(my_file_read())));
+                    showtv.setText(bytesToHuman(double.parsedouble(my_file_read())));
 
             }
         });
