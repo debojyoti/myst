@@ -78,7 +78,7 @@ public class DatazIntentService extends IntentService {
                 txbytes = TrafficStats.getMobileTxBytes();
                 totalbytes = rxbytes+txbytes;
 
-                if(totalbytes<initial)
+                if(totalbytes<initial || totalbytes<1024)
                 {
 
                     try
