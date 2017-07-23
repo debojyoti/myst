@@ -97,11 +97,12 @@ public class DatazIntentService extends IntentService {
             System.out.println("\nservice running, initial = "+initial+"\n");
             System.out.println("\nservice running, lastbootdata = "+lastBootData+"\n");
             System.out.println("\nservice running, flag = "+mystfileRead("Flag.txt")+"\n\n");
+            System.out.println("\nservice running, condition = "+(remaining)+"\n\n");
 /* ****************************(Ends) Testing output (for personal use : Debojyoti) ******************************** */
 
 
 /* **********************(Starts) If data pack exists,then only do works here  ************************ */
-            if(dataEnabled && (((int)remaining)>=1200) && (Integer.parseInt(sysDate)<Integer.parseInt(packDate)) && totalbytes!=0)
+            if(dataEnabled && ((remaining)>=1200) && (Integer.parseInt(sysDate)<Integer.parseInt(packDate)) && totalbytes!=0)
             {
 
                 System.out.println("\nservice running, cur total bytes = "+String.valueOf(totalbytes)+"\n");
