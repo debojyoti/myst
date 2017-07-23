@@ -22,10 +22,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.widget.TextView;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,76 +48,19 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
 
+            storedDay = mystfileRead("ExpDate.txt");
 
 
-
-            try
-            {
-                String FILENAME = "ExpDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
-                FileInputStream fis = openFileInput(FILENAME);
-
-                int read=-1;
-                StringBuffer buffer = new StringBuffer();
-                while((read=fis.read())!=-1)
-                {
-                    buffer.append((char)read);
-                }
-                storedDay = (buffer.toString());     // Read value stored in this String
-
-                fis.close();
-            }
-            catch (Exception e)
-            {
-
-            }
-
-
-
-             /* ******************   Read used data from Used.txt  (Starts) ************************************** */
-            try
-            {
-                String FILENAME = "Used.txt";      // File contains Initial Rx+Tx value at the time of recharge
-                FileInputStream fis = openFileInput(FILENAME);
-
-                int read=-1;
-                StringBuffer buffer = new StringBuffer();
-                while((read=fis.read())!=-1)
-                {
-                    buffer.append((char)read);
-                }
-                String pack = (buffer.toString());     // Read value stored in this String
+/* ******************   Read used data from Used.txt  (Starts) ************************************** */
+                String pack = mystfileRead("Used.txt");
                 used = Double.parseDouble(pack);
-                fis.close();
-            }
-            catch (Exception e)
-            {
-
-            }
-       /* ******************   Read datapack value once  (Ends) ************************************** */
+/* ******************   Read datapack value once  (Ends) ************************************** */
 
 
 
-
-                    /* ******************   Read remaining data from Remaining.txt  (Starts) ************************************** */
-            try
-            {
-                String FILENAME = "Remaining.txt";      // File contains Initial Rx+Tx value at the time of recharge
-                FileInputStream fis = openFileInput(FILENAME);
-
-                int read=-1;
-                StringBuffer buffer = new StringBuffer();
-                while((read=fis.read())!=-1)
-                {
-                    buffer.append((char)read);
-                }
-                String pack = (buffer.toString());     // Read value stored in this String
-                remaining = Double.parseDouble(pack);
-                fis.close();
-            }
-            catch (Exception e)
-            {
-
-            }
+/* ******************   Read remaining data from Remaining.txt  (Starts) ************************************** */
+                String rem = mystfileRead("Remaining.txt");
+                remaining = Double.parseDouble(rem);
        /* ******************   Read datapack value once  (Ends) ************************************** */
 
 
@@ -133,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
             MBused = ((used/1024)/1024);
 
             usedData.setText(String.format("%.2f",MBused)+" MB");
-            if(String.format("%.0f",MBremaining).equals("0") || (int)MBremaining<=0)
+            if((int)MBremaining<=0)
             {
                 dataRemaining.setText("Data Pack Exhausted!");
             }
@@ -143,13 +88,16 @@ public class MainActivity extends AppCompatActivity {
             }
 
             dataPack.setText(String.format("%.2f",MBpack)+" MB");
-            if(storedDay.equals("0"))
+
+            Date d = new Date(new Date().getTime());
+            String sysDate  = (String) DateFormat.format("dd", d.getTime());
+            if(storedDay.equals(sysDate))
             {
                 dateReamining.setText("Data pack expired!");
             }
             else
             {
-                dateReamining.setText(storedDay+" days");
+                dateReamining.setText((Integer.parseInt(storedDay)-Integer.parseInt(sysDate))+" days");
             }
 
         }
@@ -163,27 +111,10 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        /* ******************   Read datapack value once  (Starts) ************************************** */
-        try
-        {
-            String FILENAME = "RechargeData.txt";      // File contains Initial Rx+Tx value at the time of recharge
-            FileInputStream fis = openFileInput(FILENAME);
-
-            int read=-1;
-            StringBuffer buffer = new StringBuffer();
-            while((read=fis.read())!=-1)
-            {
-                buffer.append((char)read);
-            }
-            String pack = (buffer.toString());     // Read value stored in this String
+/* ******************   Read datapack value once  (Starts) ************************************** */
+            String pack = mystfileRead("RechargeData.txt");
             DataPack = Double.parseDouble(pack);
-            fis.close();
-        }
-        catch (Exception e)
-        {
-
-        }
-       /* ******************   Read datapack value once  (Ends) ************************************** */
+/* ******************   Read datapack value once  (Ends) ************************************** */
 
 
         Runnable r = new Runnable() {
@@ -208,6 +139,53 @@ public class MainActivity extends AppCompatActivity {
         th.start();
 
     }
+
+
+
+    /* ***************** (Starts)   File read and write functions   *************** */
+    public void mystfileWrite(String FILENAME,String data_to_write)
+    {
+
+        try
+        {
+            FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+
+
+            byte buf[] = data_to_write.getBytes();
+
+            fileOutputStream.write(buf);
+            fileOutputStream.close();
+
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    public String mystfileRead(String FILENAME)
+    {
+        String savedDataFromFile="";
+        try
+        {
+            FileInputStream fis = openFileInput(FILENAME);
+            int read = -1;
+
+            StringBuffer buffer = new StringBuffer();
+            while ((read=fis.read())!=-1)
+            {
+                buffer.append((char) read);
+            }
+            savedDataFromFile = buffer.toString();
+            fis.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return savedDataFromFile;
+    }
+
+    /* ***************** (Ends)   File read and write functions   *************** */
 }
 
 /*                      Garaged Code

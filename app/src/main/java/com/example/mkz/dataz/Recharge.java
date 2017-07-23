@@ -16,6 +16,10 @@ package com.example.mkz.dataz;
 
 
 
+
+
+
+
 import android.content.Intent;
 import android.net.TrafficStats;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +30,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
+
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Date;
 
@@ -36,7 +42,7 @@ public class Recharge extends AppCompatActivity {
 
 
 
-/* *************************   Getting valid input (Starts)  ******************************* */
+/* *************************   Getting and checking valid inputs (Starts)  ******************************* */
 
 
     Button addData;
@@ -110,9 +116,10 @@ public class Recharge extends AppCompatActivity {
     {
         Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",0);  // TYPE = 0 means no recharge
         startActivity(i);
+        finish();
     }
 
-/* *************************   Getting valid input (Ends)  ******************************* */
+/* *************************   Getting and checking valid inputs (Ends)  ******************************* */
 
 
 
@@ -123,14 +130,12 @@ public class Recharge extends AppCompatActivity {
 
 
 
-/* *************************   Storing the valid input in the file "RechargeData.txt" (Starts)  ******************************* */
+/* *************************   Storing and initializing files as per user given data (Starts)  ******************************* */
 
     public void addValidDataToFile()
     {
-        try
-        {
-            String FILENAME = "RechargeData.txt";
-            FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+
+
             long newData = (long) Integer.parseInt(dSize);
             if(data==0)      // It signifies that MB is selected by the user
             {
@@ -144,91 +149,21 @@ public class Recharge extends AppCompatActivity {
             }
             dataSize = newData;
             String data = String.valueOf(newData);
-            byte buf[] = data.getBytes();
-            fileOutputStream.write(buf);
-            fileOutputStream.close();
 
-
-
-
-
-
-
-
-        }
-        catch (Exception e)
-        {
-
-        }
-        try
-        {
-
-            String FILENAME33 = "ExpDate.txt";
-
-            FileOutputStream fileOutputStream33 = openFileOutput(FILENAME33,MODE_PRIVATE);
-
-            byte buf[] = date.getBytes();
-
-            fileOutputStream33.write(buf);
-            fileOutputStream33.close();
-        }
-        catch (Exception e)
-        {
-
-        }
-        try
-        {
-
-            String FILENAME44 = "CurrentDate.txt";
-
-            FileOutputStream fileOutputStream44 = openFileOutput(FILENAME44,MODE_PRIVATE);
+            mystfileWrite("RechargeData.txt",data);
+            System.out.println("\n\nFrom recharge, string data = "+data);
             Date d = new Date(new Date().getTime());
             String cDate  = (String) DateFormat.format("dd", d.getTime());
-            byte buf[] = cDate.getBytes();
-
-            fileOutputStream44.write(buf);
-            fileOutputStream44.close();
-        }
-        catch (Exception e)
-        {
-
-        }
-
-        try
-        {
-            String s1 = String.valueOf(dataSize);
-            String FILENAME = "Remaining.txt";
-
-            FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
-
-            byte buf[] = s1.getBytes();
-
-            fileOutputStream.write(buf);
-            fileOutputStream.close();
-        }
-        catch (Exception e)
-        {
-
-        }
-
+            cDate = String.valueOf(Integer.parseInt(cDate)+Integer.parseInt(date));
+            mystfileWrite("ExpDate.txt",cDate);
+            mystfileWrite("Remaining.txt",data);
+            mystfileWrite("Initial.txt","0");
+            mystfileWrite("Used.txt","0");
 
 
         /* **************** Taking rx+tx at the time of recharge  Starts******************* */
-        try
-        {
-            String FILENAME = "Initial.txt";
-            long rxbytes = TrafficStats.getMobileRxBytes();
-            long txbytes = TrafficStats.getMobileTxBytes();
-            long totalbytes = rxbytes+txbytes;
-            FileOutputStream fileOutputStream2 = openFileOutput(FILENAME,MODE_PRIVATE);
-            byte[] buf = String.valueOf(totalbytes).getBytes();
-            fileOutputStream2.write(buf);
-            fileOutputStream2.close();
-        }
-        catch (Exception e)
-        {
 
-        }
+            mystfileWrite("Flag.txt","0");
         /* **************** Taking rx+tx at the time of recharge  Ends******************* */
 
 
@@ -236,9 +171,72 @@ public class Recharge extends AppCompatActivity {
         /*           Send to the usage page  (to MainActivity.java)          */
         Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",1);  // TYPE = 1 means new recharge
         startActivity(i);
+        finish();
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /* ***************** (Starts)   File read and write functions   *************** */
+    public void mystfileWrite(String FILENAME,String data_to_write)
+    {
+
+        try
+        {
+            FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+
+
+            byte buf[] = data_to_write.getBytes();
+
+            fileOutputStream.write(buf);
+            fileOutputStream.close();
+
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    public String mystfileRead(String FILENAME)
+    {
+        String savedDataFromFile="";
+        try
+        {
+            FileInputStream fis = openFileInput(FILENAME);
+            int read = -1;
+
+            StringBuffer buffer = new StringBuffer();
+            while ((read=fis.read())!=-1)
+            {
+                buffer.append((char) read);
+            }
+            savedDataFromFile = buffer.toString();
+            fis.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return savedDataFromFile;
+    }
+
+    /* ***************** (Ends)   File read and write functions   *************** */
+
 }
 
-/* *************************   Storing the valid input in the file "RechargeData.txt" (Ends)  ******************************* */
+/* *************************   Storing and initializing files as per user given data (Ends)  ******************************* */

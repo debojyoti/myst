@@ -14,6 +14,7 @@ package com.example.mkz.dataz;
             2) Recharge.txt      =       It stores the data pack's value (entered by user)
             3) *Used.txt         =       It stores used data since last recharge (Current system's TotalRxBytes - Initial)
             4) *Remaining.txt    =       It stores the remaining data (Recharge - Used)
+            5) ExpDate.txt       =       It stores
             
             *** Note : All these files contains values in terms of bytes
              
@@ -48,14 +49,14 @@ import java.util.Date;
 
 public class DatazIntentService extends IntentService {
 
-    public double rxbytes;
-    public double txbytes;
-    public double totalbytes;
-    public double used;
-    public double initial;
-    public double DataPack;
-    public double remaining;
-    public double lastBootData;
+    public long rxbytes;
+    public long txbytes;
+    public long totalbytes;
+    public long used;
+    public long initial;
+    public long DataPack;
+    public long remaining;
+    public long lastBootData;
     public String expday;
 
     String savedata;
@@ -69,245 +70,75 @@ public class DatazIntentService extends IntentService {
         @Override
         public void handleMessage(Message msg) {
 
+        rxbytes = TrafficStats.getMobileRxBytes();
+        txbytes = TrafficStats.getMobileTxBytes();
+        totalbytes = rxbytes+txbytes;   // current rx+tx
 
 
-
+/* **********************(Starts) Checking whether systemDate is lesser than data pack exp date  ************************ */
             Date d = new Date(new Date().getTime());
             String sysDate  = (String) DateFormat.format("dd", d.getTime());
-            String curDate = "";
-            try
-            {
-                String FILENAME22 = "CurrentDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
-                FileInputStream fis22 = openFileInput(FILENAME22);
-
-                int read=-1;
-                StringBuffer buffer = new StringBuffer();
-                while((read=fis22.read())!=-1)
-                {
-                    buffer.append((char)read);
-                }
-                curDate = (buffer.toString());     // Read value stored in this String
-
-                fis22.close();
-            }
-            catch (Exception e)
-            {
-
-            }
-            if(!sysDate.equals(curDate))
-            {
-                int sd,cd,diff;
-                String savedDays="";
-                sd = Integer.parseInt(sysDate);
-                cd = Integer.parseInt(curDate);
-
-                diff=sd-cd;
-
-                try
-                {
-                    String FILENAME = "ExpDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
-                    FileInputStream fis = openFileInput(FILENAME);
-
-                    int read=-1;
-                    StringBuffer buffer = new StringBuffer();
-                    while((read=fis.read())!=-1)
-                    {
-                        buffer.append((char)read);
-                    }
-                    savedDays = (buffer.toString());     // Read value stored in this String
-
-                    fis.close();
-                }
-                catch (Exception e)
-                {
-
-                }
-
-                try
-                {
-
-                    String FILENAME33 = "ExpDate.txt";
-
-                    FileOutputStream fileOutputStream33 = openFileOutput(FILENAME33,MODE_PRIVATE);
-
-                    byte buf[] = String.valueOf(Integer.parseInt(savedDays)-diff).getBytes();
-
-                    fileOutputStream33.write(buf);
-                    fileOutputStream33.close();
-                }
-                catch (Exception e)
-                {
-
-                }
-
-            }
-            Date d1 = new Date(new Date().getTime());
-            String sysTime  = (String) DateFormat.format("HHmmss", d1.getTime());
+            String packDate = mystfileRead("ExpDate.txt");
+/* **********************(Ends) Checking whether systemDate is lesser than data pack exp date  ************************ */
 
 
-            if(sysTime.equals("000000"))
-            {
-                String storedDay="";
-                try
-                {
-                    String FILENAME = "ExpDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
-                    FileInputStream fis = openFileInput(FILENAME);
 
-                    int read=-1;
-                    StringBuffer buffer = new StringBuffer();
-                    while((read=fis.read())!=-1)
-                    {
-                        buffer.append((char)read);
-                    }
-                    storedDay = (buffer.toString());     // Read value stored in this String
-                    expday = storedDay;
-                    fis.close();
-                }
-                catch (Exception e)
-                {
-
-                }
-
-                try
-                {
-
-                    String FILENAME33 = "ExpDate.txt";
-
-                    FileOutputStream fileOutputStream33 = openFileOutput(FILENAME33,MODE_PRIVATE);
-
-                    byte buf[] = String.valueOf(Integer.parseInt(storedDay)-1).getBytes();
-
-                    fileOutputStream33.write(buf);
-                    fileOutputStream33.close();
-                }
-                catch (Exception e)
-                {
-
-                }
-            }
-
-            try
-            {
-                String FILENAME = "ExpDate.txt";      // File contains Initial Rx+Tx value at the time of recharge
-                FileInputStream fis = openFileInput(FILENAME);
-
-                int read=-1;
-                StringBuffer buffer = new StringBuffer();
-                while((read=fis.read())!=-1)
-                {
-                    buffer.append((char)read);
-                }
-                expday = (buffer.toString());     // Read value stored in this String
-                fis.close();
-            }
-            catch (Exception e)
-            {
-
-            }
-
+/* **********************(Starts) Checking whether data connection is enabled  ************************ */
             boolean dataEnabled = isMobileDataEnabled();
-            System.out.println("\nservice running, data = "+String.valueOf(dataEnabled)+"\n");
-            System.out.println("\nservice running, data reamining = "+String.valueOf(remaining)+"\n");
+/* **********************(Ends) Checking whether data connection is enabled ************************ */
 
-            if(dataEnabled && (((int)remaining)>=1200) && !expday.equals("0"))
+
+
+/* ****************************(Starts) Testing output (for personal use : Debojyoti) ******************************** */
+            System.out.println("\n\nservice running, data = "+String.valueOf(dataEnabled)+"\n");
+            System.out.println("\nservice running, data reamining = "+remaining+"\n");
+            System.out.println("\nservice running, data pack = "+DataPack+"\n");
+            System.out.println("\nservice running, used = "+used+"\n");
+            System.out.println("\nservice running, initial = "+initial+"\n");
+            System.out.println("\nservice running, lastbootdata = "+lastBootData+"\n");
+            System.out.println("\nservice running, flag = "+mystfileRead("Flag.txt")+"\n\n");
+/* ****************************(Ends) Testing output (for personal use : Debojyoti) ******************************** */
+
+
+/* **********************(Starts) If data pack exists,then only do works here  ************************ */
+            if(dataEnabled && (((int)remaining)>=1200) && (Integer.parseInt(sysDate)<Integer.parseInt(packDate)) && totalbytes!=0)
             {
-                rxbytes = TrafficStats.getMobileRxBytes();
-                txbytes = TrafficStats.getMobileTxBytes();
-                totalbytes = rxbytes+txbytes;
 
-                if(totalbytes<initial || totalbytes<1024)
+                System.out.println("\nservice running, cur total bytes = "+String.valueOf(totalbytes)+"\n");
+
+                if(mystfileRead("Flag.txt").equals("0"))    // flag will be 0 if new recharge is done
+                {
+                    mystfileWrite("Initial.txt",String.valueOf(totalbytes));
+                    initial=totalbytes;
+                    mystfileWrite("Flag.txt","1");
+                }
+
+                if(totalbytes<initial || totalbytes<1024)       // if device reboots
                 {
 
-                    try
-                    {
-                        String FILENAME22 = "Used.txt";      // File contains Initial Rx+Tx value at the time of recharge
-                        FileInputStream fis22 = openFileInput(FILENAME22);
+/* (Starts) backup the previous used data from the "Used.txt" file and store it in the variable lastBootData */
+                        String pack = mystfileRead("Used.txt");
+                        lastBootData = Long.parseLong(pack);
+/* (Ends) backup the previous used data from the "Used.txt" file and store it in the variable lastBootData */
 
-                        int read=-1;
-                        StringBuffer buffer = new StringBuffer();
-                        while((read=fis22.read())!=-1)
-                        {
-                            buffer.append((char)read);
-                        }
-                        String pack = (buffer.toString());     // Read value stored in this String
-                        lastBootData = Double.parseDouble(pack);
-                        fis22.close();
-                    }
-                    catch (Exception e)
-                    {
-
-                    }
-
-
-                    try
-                    {
-                        String FILENAME11 = "Initial.txt";
-                        /*double rxbytes1 = TrafficStats.getMobileRxBytes();
-                        double txbytes1 = TrafficStats.getMobileTxBytes();
-                        double totalbytes1 = rxbytes1+txbytes1;*/
-                        FileOutputStream fileOutputStream21 = openFileOutput(FILENAME11,MODE_PRIVATE);
-                        byte[] buf = "0".getBytes();
-                        fileOutputStream21.write(buf);
-                        fileOutputStream21.close();
-                    }
-                    catch (Exception e)
-                    {
-
-                    }
+                        mystfileWrite("Initial.txt","0");  //  Assign initial value = 0
                 }
                 used = lastBootData+(totalbytes-initial);          //          Used data from last recharge
                 String s;
-                if(rxbytes == TrafficStats.UNSUPPORTED || txbytes == TrafficStats.UNSUPPORTED)
-                {
-                    s="Unsupported";
-                }
-                else
-                {
-                    s=String.valueOf(totalbytes);
-                }
+
+
 
                 s = String.valueOf(used);
 
-                if(s!="0")
-                {
-                    savedata = s;
-                    try
-                    {
-                        String FILENAME = "Used.txt";
-
-                        FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
-
-                        byte buf[] = savedata.getBytes();
-
-                        fileOutputStream.write(buf);
-                        fileOutputStream.close();
-                    }
-                    catch (Exception e)
-                    {
-
-                    }
-                    try
-                    {
+/* *************** (Starts)    Keep updating used data and remaining data ****************************** */
+                        savedata = s;
+                        mystfileWrite("Used.txt",savedata);
                         remaining = DataPack-used;
                         String s1 = String.valueOf(remaining);
-                        String FILENAME = "Remaining.txt";
+                        mystfileWrite("Remaining.txt",s1);
+/* *************** (Ends)    Keep updating used data and remaining data ****************************** */
 
-                        FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
-
-                        byte buf[] = s1.getBytes();
-
-                        fileOutputStream.write(buf);
-                        fileOutputStream.close();
-                    }
-                    catch (Exception e)
-                    {
-
-                    }
-                }
             }
-
-
-
         }
     };
 
@@ -319,75 +150,17 @@ public class DatazIntentService extends IntentService {
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
 
-
-        try
-        {
-            String FILENAME = "Remaining.txt";      // File contains Initial Rx+Tx value at the time of recharge
-            FileInputStream fis = openFileInput(FILENAME);
-
-            int read=-1;
-            StringBuffer buffer = new StringBuffer();
-            while((read=fis.read())!=-1)
-            {
-                buffer.append((char)read);
-            }
-            String pack = (buffer.toString());     // Read value stored in this String
-            remaining = Double.parseDouble(pack);
-            fis.close();
-        }
-        catch (Exception e)
-        {
-
-        }
-
         lastBootData=0;
 
 
-        rxbytes = TrafficStats.getMobileRxBytes();
-        txbytes = TrafficStats.getMobileTxBytes();
-        totalbytes = rxbytes+txbytes;
-
-        try
-        {
-            String FILENAME = "Initial.txt";      // File contains Initial Rx+Tx value at the time of recharge
-            FileInputStream fis = openFileInput(FILENAME);
-
-            int read=-1;
-            StringBuffer buffer = new StringBuffer();
-            while((read=fis.read())!=-1)
-            {
-                buffer.append((char)read);
-            }
-            String remaining = (buffer.toString());     // Read value stored in this String
-            initial = Double.parseDouble(remaining);
-            fis.close();
-        }
-        catch(Exception e)
-        {
-
-        }
-        try
-        {
-            String FILENAME = "RechargeData.txt";      // The amount of data recharged by the user
-            FileInputStream fis = openFileInput(FILENAME);
-
-            int read=-1;
-            StringBuffer buffer = new StringBuffer();
-            while((read=fis.read())!=-1)
-            {
-                buffer.append((char)read);
-            }
-            String pack = (buffer.toString());     // Read value stored in this String
-            DataPack = Double.parseDouble(pack);
-            fis.close();
-        }
-        catch(Exception e)
-        {
-
-        }
-
-
-
+/*  ******************** (Starts)  At the start of this service, read 3 files  *************************    */
+        String pack = mystfileRead("Remaining.txt");
+        remaining = Long.parseLong(pack);
+        String remaining1 = mystfileRead("Initial.txt");
+        initial = Long.parseLong(remaining1);
+        String packData = mystfileRead("RechargeData.txt");
+        DataPack = Long.parseLong(packData);
+/*  ******************** (Starts)  At the start of this service, read 3 files  *************************    */
 
 
         Runnable r = new Runnable() {
@@ -405,17 +178,14 @@ public class DatazIntentService extends IntentService {
                 }
             }
         };
-
         Thread th = new Thread(r);
         th.start();
-
         return START_STICKY;
     }
 
     public Boolean isMobileDataEnabled(){
         Object connectivityService = getSystemService(CONNECTIVITY_SERVICE);
         ConnectivityManager cm = (ConnectivityManager) connectivityService;
-
         try {
             Class<?> c = Class.forName(cm.getClass().getName());
             Method m = c.getDeclaredMethod("getMobileDataEnabled");
@@ -427,4 +197,51 @@ public class DatazIntentService extends IntentService {
         }
     }
 
+
+
+
+    /* ***************** (Starts)   File read and write functions   *************** */
+    public void mystfileWrite(String FILENAME,String data_to_write)
+    {
+
+        try
+        {
+            FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+
+
+            byte buf[] = data_to_write.getBytes();
+
+            fileOutputStream.write(buf);
+            fileOutputStream.close();
+
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    public String mystfileRead(String FILENAME)
+    {
+        String savedDataFromFile="";
+        try
+        {
+            FileInputStream fis = openFileInput(FILENAME);
+            int read = -1;
+
+            StringBuffer buffer = new StringBuffer();
+            while ((read=fis.read())!=-1)
+            {
+                buffer.append((char) read);
+            }
+            savedDataFromFile = buffer.toString();
+            fis.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return savedDataFromFile;
+    }
+
+    /* ***************** (Ends)   File read and write functions   *************** */
 }
