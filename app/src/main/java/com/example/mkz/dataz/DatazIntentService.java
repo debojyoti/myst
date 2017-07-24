@@ -239,7 +239,7 @@ public class DatazIntentService extends IntentService {
             fis.close();
         }
         catch (Exception e) {
-            e.printStackTrace();
+            return "0";
         }
         return savedDataFromFile;
     }

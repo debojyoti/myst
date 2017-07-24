@@ -32,6 +32,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Date;
 
@@ -58,6 +59,26 @@ public class Recharge extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recharge);
+        try
+        {
+            FileInputStream fis = openFileInput("RechargeData.txt");
+            int read = -1;
+
+            StringBuffer buffer = new StringBuffer();
+            while ((read=fis.read())!=-1)
+            {
+                buffer.append((char) read);
+            }
+
+            fis.close();
+        }
+        catch (FileNotFoundException e) {
+            ((Button) findViewById(R.id.showUsage)).setVisibility(View.INVISIBLE);
+        }
+        catch (Exception e)
+        {
+
+        }
         addData = (Button) findViewById(R.id.rechargeBtn);
         errorDisp = (TextView) findViewById(R.id.errorDisp);
         getRechargeAmount = (EditText) findViewById(R.id.getRechargeAmount);
@@ -93,6 +114,11 @@ public class Recharge extends AppCompatActivity {
                 }
             }
         });
+
+
+
+
+
     }
     public void onRadioButtonClicked(View view) {
         // Is the button now checked?
@@ -114,6 +140,7 @@ public class Recharge extends AppCompatActivity {
     }
     public void showUsage(View v)
     {
+
         Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",0);  // TYPE = 0 means no recharge
         startActivity(i);
         finish();

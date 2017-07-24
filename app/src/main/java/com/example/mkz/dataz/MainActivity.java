@@ -26,6 +26,7 @@ import android.text.format.DateFormat;
 import android.widget.TextView;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Date;
 
@@ -180,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
             fis.close();
         }
         catch (Exception e) {
-            e.printStackTrace();
+            return "0";
         }
         return savedDataFromFile;
     }
