@@ -145,7 +145,6 @@ public class Recharge extends AppCompatActivity {
 
         Intent i = new Intent(Recharge.this,MainActivity.class).putExtra("TYPE",0);  // TYPE = 0 means no recharge
         startActivity(i);
-        finish();
     }
 
 /* *************************   Getting and checking valid inputs (Ends)  ******************************* */

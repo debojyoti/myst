@@ -136,7 +136,7 @@ public class DatazIntentService extends IntentService {
 
 
 /* **********************(Starts) If data pack exists,then only do works here  ************************ */
-            if(dataEnabled && ((remaining)>=1200) && (diff<0) && totalbytes!=0)
+            if(dataEnabled && ((remaining)>=1200) && (diff>0) && totalbytes!=0)
             {
 
                 System.out.println("\nservice running, cur total bytes = "+String.valueOf(totalbytes)+"\n");

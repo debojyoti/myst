@@ -28,6 +28,7 @@ import android.widget.TextView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -90,23 +91,23 @@ public class MainActivity extends AppCompatActivity {
             TextView dateReamining = (TextView) findViewById(R.id.dateRemaining);
 
 
-            double MBused,MBremaining,MBpack;
+            /*double MBused,MBremaining,MBpack;
 
             MBpack = ((DataPack/1024)/1024);
             MBremaining = ((remaining/1024)/1024);
-            MBused = ((used/1024)/1024);
+            MBused = ((used/1024)/1024);*/
 
-            usedData.setText(String.format("%.2f",MBused)+" MB");
-            if((int)MBremaining<=0)
+            usedData.setText(bytesToHuman(used));
+            if(remaining<=1000000)      // 1 mb
             {
                 dataRemaining.setText("Data Pack Exhausted!");
             }
             else
             {
-                dataRemaining.setText(String.format("%.2f",MBremaining)+" MB");
+                dataRemaining.setText(bytesToHuman(remaining));
             }
 
-            dataPack.setText(String.format("%.2f",MBpack)+" MB");
+            dataPack.setText(bytesToHuman(DataPack));
 
             if(diff==0)
             {
@@ -203,6 +204,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /* ***************** (Ends)   File read and write functions   *************** */
+
+    // [custom function] converts bytes To Human readable form
+    public static String bytesToHuman (double size)
+    {
+        double Kb = 1  * 1024;
+        double Mb = Kb * 1024;
+        double Gb = Mb * 1024;
+        double Tb = Gb * 1024;
+        double Pb = Tb * 1024;
+        double Eb = Pb * 1024;
+
+        if (size <  Kb)                 return floatForm(        size     ) + " byte";
+        if (size >= Kb && size < Mb)    return floatForm((double)size / Kb) + " KB";
+        if (size >= Mb && size < Gb)    return floatForm((double)size / Mb) + " MB";
+        if (size >= Gb && size < Tb)    return floatForm((double)size / Gb) + " GB";
+        if (size >= Tb && size < Pb)    return floatForm((double)size / Tb) + " TB";
+        if (size >= Pb && size < Eb)    return floatForm((double)size / Pb) + " PB";
+        if (size >= Eb)                 return floatForm((double)size / Eb) + " EB";
+
+        return "???";
+    }
+    // [custom function ] sets decimal format for bytesToHuman
+    public static String floatForm (double d)
+    {
+        return new DecimalFormat("#.##").format(d);
+    }
 }
 
 /*                      Garaged Code
