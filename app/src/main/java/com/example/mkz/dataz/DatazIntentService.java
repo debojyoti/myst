@@ -114,14 +114,14 @@ public class DatazIntentService extends IntentService {
                     mystfileWrite("Flag.txt","1");
                 }
 
-                if(totalbytes<initial || totalbytes<1024)       // if device reboots
+                if(totalbytes<initial /*|| totalbytes<1024*/)       // if device reboots
                 {
 
 /* (Starts) backup the previous used data from the "Used.txt" file and store it in the variable lastBootData */
                         String pack = mystfileRead("Used.txt");
                         lastBootData = Long.parseLong(pack);
 /* (Ends) backup the previous used data from the "Used.txt" file and store it in the variable lastBootData */
-
+                        initial=0;
                         mystfileWrite("Initial.txt","0");  //  Assign initial value = 0
                 }
                 used = lastBootData+(totalbytes-initial);          //          Used data from last recharge
