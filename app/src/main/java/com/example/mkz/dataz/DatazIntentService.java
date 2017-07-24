@@ -27,8 +27,6 @@ package com.example.mkz.dataz;
  */
 
 
-
-
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
@@ -45,6 +43,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.text.SimpleDateFormat;
 
 
 public class DatazIntentService extends IntentService {
@@ -57,7 +57,7 @@ public class DatazIntentService extends IntentService {
     public long DataPack;
     public long remaining;
     public long lastBootData;
-    public String expday;
+    public long expDate;
 
     String savedata;
 
@@ -76,9 +76,43 @@ public class DatazIntentService extends IntentService {
 
 
 /* **********************(Starts) Checking whether systemDate is lesser than data pack exp date  ************************ */
-            Date d = new Date(new Date().getTime());
+            /*Date d = new Date(new Date().getTime());
             String sysDate  = (String) DateFormat.format("dd", d.getTime());
             String packDate = mystfileRead("ExpDate.txt");
+            if(dataEnabled && ((remaining)>=1200) && (Integer.parseInt(sysDate)<Integer.parseInt(packDate)) && totalbytes!=0)
+            */
+
+            Date d = new Date(new Date().getTime());
+            String sysDate  = (String) DateFormat.format("MM-dd-yyyy", d.getTime());
+            String packDate = mystfileRead("ExpDate.txt");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+            /*
+
+            String dt = (String) DateFormat.format("MM-dd-yyyy", d.getTime());  // sysdate
+            Calendar c = Calendar.getInstance();
+            try {
+                c.setTime(sdf.parse(dt));
+            } catch (Exception e) {
+            }
+
+            c.add(Calendar.DATE, 33);  // number of days to add, can also use Calendar.DAY_OF_MONTH in place of Calendar.DATE
+            SimpleDateFormat sdf1 = new SimpleDateFormat("MM-dd-yyyy");
+            String output = sdf1.format(c.getTime());
+            System.out.println("Updated Date = "+output);*/
+            long diff=1;
+            String days="";
+            try {
+                Date date1 = sdf.parse(sysDate);
+                Date date2 = sdf.parse(packDate);
+                diff = date2.getTime() - date1.getTime();
+                diff = TimeUnit.DAYS.convert(diff, TimeUnit.DAYS) ;
+                diff/= (1000*60*60*24);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
 /* **********************(Ends) Checking whether systemDate is lesser than data pack exp date  ************************ */
 
 
@@ -97,16 +131,15 @@ public class DatazIntentService extends IntentService {
             System.out.println("\nservice running, initial = "+initial+"\n");
             System.out.println("\nservice running, lastbootdata = "+lastBootData+"\n");
             System.out.println("\nservice running, flag = "+mystfileRead("Flag.txt")+"\n\n");
-            System.out.println("\nservice running, condition = "+(remaining)+"\n\n");
+            System.out.println("\nservice running, day rem = "+(diff)+"\n\n");
 /* ****************************(Ends) Testing output (for personal use : Debojyoti) ******************************** */
 
 
 /* **********************(Starts) If data pack exists,then only do works here  ************************ */
-            if(dataEnabled && ((remaining)>=1200) && (Integer.parseInt(sysDate)<Integer.parseInt(packDate)) && totalbytes!=0)
+            if(dataEnabled && ((remaining)>=1200) && (diff<0) && totalbytes!=0)
             {
 
                 System.out.println("\nservice running, cur total bytes = "+String.valueOf(totalbytes)+"\n");
-
                 if(mystfileRead("Flag.txt").equals("0"))    // flag will be 0 if new recharge is done
                 {
                     mystfileWrite("Initial.txt",String.valueOf(totalbytes));

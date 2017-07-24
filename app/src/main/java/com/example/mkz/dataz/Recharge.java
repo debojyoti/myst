@@ -34,6 +34,8 @@ import android.widget.TextView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class Recharge extends AppCompatActivity {
@@ -179,10 +181,32 @@ public class Recharge extends AppCompatActivity {
 
             mystfileWrite("RechargeData.txt",data);
             System.out.println("\n\nFrom recharge, string data = "+data);
-            Date d = new Date(new Date().getTime());
+
+
+
+            /*Date d = new Date(new Date().getTime());
             String cDate  = (String) DateFormat.format("dd", d.getTime());
             cDate = String.valueOf(Integer.parseInt(cDate)+Integer.parseInt(date));
-            mystfileWrite("ExpDate.txt",cDate);
+            mystfileWrite("ExpDate.txt",cDate); */
+
+/* ******************* (Starts) Generating and saving the corresponding Expiry date  ********************* */
+            Date d = new Date(new Date().getTime());
+            String dt = (String) DateFormat.format("MM-dd-yyyy", d.getTime());  // Start date
+            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+            Calendar c = Calendar.getInstance();
+            try {
+                c.setTime(sdf.parse(dt));
+            } catch (Exception e) {
+            }
+            c.add(Calendar.DATE, Integer.parseInt(date));  // number of days to add, can also use Calendar.DAY_OF_MONTH in place of Calendar.DATE
+            SimpleDateFormat sdf1 = new SimpleDateFormat("MM-dd-yyyy");
+            String updatedDate = sdf1.format(c.getTime());
+            System.out.println("Updated Date = "+updatedDate);
+            mystfileWrite("ExpDate.txt",updatedDate);
+/* ******************* (Ends) Generating and saving the corresponding Expiry date  ********************* */
+
+
+
             mystfileWrite("Remaining.txt",data);
             mystfileWrite("Initial.txt","0");
             mystfileWrite("Used.txt","0");

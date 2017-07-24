@@ -28,7 +28,9 @@ import android.widget.TextView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,7 +51,23 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
 
-            storedDay = mystfileRead("ExpDate.txt");
+            Date d = new Date(new Date().getTime());
+            String sysDate  = (String) DateFormat.format("MM-dd-yyyy", d.getTime());
+            String packDate = mystfileRead("ExpDate.txt");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+            long diff=1;
+            String days="";
+            try {
+                Date date1 = sdf.parse(sysDate);
+                Date date2 = sdf.parse(packDate);
+                diff = date2.getTime() - date1.getTime();
+                diff = TimeUnit.DAYS.convert(diff, TimeUnit.DAYS) ;
+                diff/= (1000*60*60*24);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            storedDay = String.valueOf(diff);       // Currently no use of "storedDay" var
 
 
 /* ******************   Read used data from Used.txt  (Starts) ************************************** */
@@ -90,15 +108,13 @@ public class MainActivity extends AppCompatActivity {
 
             dataPack.setText(String.format("%.2f",MBpack)+" MB");
 
-            Date d = new Date(new Date().getTime());
-            String sysDate  = (String) DateFormat.format("dd", d.getTime());
-            if(storedDay.equals(sysDate))
+            if(diff==0)
             {
                 dateReamining.setText("Data pack expired!");
             }
             else
             {
-                dateReamining.setText((Integer.parseInt(storedDay)-Integer.parseInt(sysDate))+" days");
+                dateReamining.setText(diff+" days");
             }
 
         }
