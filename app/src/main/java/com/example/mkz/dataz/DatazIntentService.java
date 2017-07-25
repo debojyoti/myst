@@ -28,6 +28,8 @@ package com.example.mkz.dataz;
 
 
 import android.app.IntentService;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -36,18 +38,28 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.v7.app.NotificationCompat;
 import android.text.format.DateFormat;
+import android.view.View;
 import android.widget.Toast;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.text.SimpleDateFormat;
 
 
 public class DatazIntentService extends IntentService {
+
+
+    NotificationCompat.Builder notification;
+
+    private static final int uID = 123456;
+
+
 
     public long rxbytes;
     public long txbytes;
@@ -58,6 +70,10 @@ public class DatazIntentService extends IntentService {
     public long remaining;
     public long lastBootData;
     public long expDate;
+    public int not_flag=0;
+    public int curProgress,totalProgress;
+    public long prevBytes;
+    public long exh_flag=-1,exp_flag=-1,dis_flag=-1;
 
     String savedata;
 
@@ -130,14 +146,42 @@ public class DatazIntentService extends IntentService {
             System.out.println("\nservice running, used = "+used+"\n");
             System.out.println("\nservice running, initial = "+initial+"\n");
             System.out.println("\nservice running, lastbootdata = "+lastBootData+"\n");
-            System.out.println("\nservice running, flag = "+mystfileRead("Flag.txt")+"\n\n");
+            //System.out.println("\nservice running, totalP = "+totalProgress+" curP = "+curProgress+"\n");
+            System.out.println("\nservice running, flag = "+mystfileRead("Flag.txt")+"\n");
             System.out.println("\nservice running, day rem = "+(diff)+"\n\n");
 /* ****************************(Ends) Testing output (for personal use : Debojyoti) ******************************** */
 
 
+
+
+
+
+
+
+
+
+
+
 /* **********************(Starts) If data pack exists,then only do works here  ************************ */
-            if(dataEnabled && ((remaining)>=1200) && (diff>0) && totalbytes!=0)
+            if(dataEnabled && ((remaining)>=4200) && (diff>0) && totalbytes!=0)
             {
+
+/*  *****************(Starts) Updating notification content   *************** */
+                notification.setSmallIcon(R.drawable.mystlogo);
+                notification.setContentTitle("Remaining = "+bytesToHuman(remaining));
+                notification.setContentText("Used =" +bytesToHuman(used)+" (Data is enabled) "+bytesToHuman((double)(totalbytes-prevBytes))+"/s");
+                curProgress=((int)used);
+                totalProgress=(int)DataPack;
+                notification.setProgress(totalProgress, curProgress, false);
+                notification.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
+                if(not_flag==0)
+                {
+                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.notify(uID,notification.build());
+                    not_flag=1;
+                }
+/*  *******************(Ends) Updating notification content******************  */
+
 
                 System.out.println("\nservice running, cur total bytes = "+String.valueOf(totalbytes)+"\n");
                 if(mystfileRead("Flag.txt").equals("0"))    // flag will be 0 if new recharge is done
@@ -172,6 +216,52 @@ public class DatazIntentService extends IntentService {
                         mystfileWrite("Remaining.txt",s1);
 /* *************** (Ends)    Keep updating used data and remaining data ****************************** */
 
+            prevBytes=totalbytes;
+                exh_flag=exp_flag=dis_flag=0;
+
+            }
+            else if(((remaining)<4200) && exh_flag==0)
+            {
+                notification.setSmallIcon(R.drawable.mystlogo);
+                notification.setContentTitle("Exhausted!");
+                notification.setContentText("Data Pack = "+bytesToHuman(DataPack));
+
+
+                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.notify(uID,notification.build());
+
+                exh_flag=1;
+                dis_flag=1;
+
+            }
+            else if((diff<=0) && exp_flag==0)
+            {
+                notification.setSmallIcon(R.drawable.mystlogo);
+                notification.setContentTitle("Validity Expired!");
+                notification.setContentText("Data Pack = "+bytesToHuman(DataPack));
+
+
+                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.notify(uID,notification.build());
+                exh_flag=1;
+                dis_flag=1;
+
+
+            }
+            else if(!dataEnabled && totalbytes==0 && dis_flag==0)
+            {
+                notification.setSmallIcon(R.drawable.mystlogo);
+                notification.setContentTitle("Rem = "+bytesToHuman(remaining));
+                notification.setContentText("Used =" +bytesToHuman(used)+" (Data is disabled)");
+                curProgress=((int)used);
+                totalProgress=(int)DataPack;
+                notification.setProgress(0, 0, false);
+
+                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.notify(uID,notification.build());
+
+                    dis_flag=1;
+
             }
         }
     };
@@ -185,6 +275,19 @@ public class DatazIntentService extends IntentService {
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
 
         lastBootData=0;
+        prevBytes=TrafficStats.getMobileTxBytes()+TrafficStats.getMobileRxBytes();
+
+/*  ***************************(Starts) Building notification object ****************************    */
+        notification = new NotificationCompat.Builder(DatazIntentService.this);
+        Intent i = new Intent(DatazIntentService.this,MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(DatazIntentService.this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+        notification.setContentIntent(pi);
+        notification.setOngoing(true);
+/*  ***************************(Ends) Building notification object ****************************    */
+
+
+
+
 
 
 /*  ******************** (Starts)  At the start of this service, read 3 files  *************************    */
@@ -238,6 +341,16 @@ public class DatazIntentService extends IntentService {
     public void mystfileWrite(String FILENAME,String data_to_write)
     {
 
+
+        Intent i = new Intent(this,MainActivity.class);
+
+        PendingIntent pi = PendingIntent.getActivity(this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+
+        notification.setContentIntent(pi);
+
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        nm.notify(uID,notification.build());
+
         try
         {
             FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
@@ -278,4 +391,49 @@ public class DatazIntentService extends IntentService {
     }
 
     /* ***************** (Ends)   File read and write functions   *************** */
+
+
+
+    public void notify(View v)
+    {
+        notification.setSmallIcon(R.drawable.mystlogo);
+        notification.setTicker("Myst Running!");
+        notification.setWhen(System.currentTimeMillis());
+        notification.setContentTitle("Myst");
+        notification.setContentText("hello");
+
+        Intent i = new Intent(this,MainActivity.class);
+
+        PendingIntent pi = PendingIntent.getActivity(this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+
+        notification.setContentIntent(pi);
+
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        nm.notify(uID,notification.build());
+    }
+    // [custom function] converts bytes To Human readable form
+    public static String bytesToHuman (double size)
+    {
+        double Kb = 1  * 1024;
+        double Mb = Kb * 1024;
+        double Gb = Mb * 1024;
+        double Tb = Gb * 1024;
+        double Pb = Tb * 1024;
+        double Eb = Pb * 1024;
+
+        if (size <  Kb)                 return floatForm(        size     ) + " byte";
+        if (size >= Kb && size < Mb)    return floatForm((double)size / Kb) + " KB";
+        if (size >= Mb && size < Gb)    return floatForm((double)size / Mb) + " MB";
+        if (size >= Gb && size < Tb)    return floatForm((double)size / Gb) + " GB";
+        if (size >= Tb && size < Pb)    return floatForm((double)size / Tb) + " TB";
+        if (size >= Pb && size < Eb)    return floatForm((double)size / Pb) + " PB";
+        if (size >= Eb)                 return floatForm((double)size / Eb) + " EB";
+
+        return "???";
+    }
+    // [custom function ] sets decimal format for bytesToHuman
+    public static String floatForm (double d)
+    {
+        return new DecimalFormat("#.##").format(d);
+    }
 }
