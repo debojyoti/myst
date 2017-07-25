@@ -173,7 +173,7 @@ public class DatazIntentService extends IntentService {
                 curProgress=((int)used);
                 totalProgress=(int)DataPack;
                 notification.setProgress(totalProgress, curProgress, false);
-                notification.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
+
                 if(not_flag==0)
                 {
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -226,12 +226,13 @@ public class DatazIntentService extends IntentService {
                 notification.setContentTitle("Exhausted!");
                 notification.setContentText("Data Pack = "+bytesToHuman(DataPack));
 
-
+                notification.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     nm.notify(uID,notification.build());
 
                 exh_flag=1;
                 dis_flag=1;
+
 
             }
             else if((diff<=0) && exp_flag==0)
@@ -240,9 +241,10 @@ public class DatazIntentService extends IntentService {
                 notification.setContentTitle("Validity Expired!");
                 notification.setContentText("Data Pack = "+bytesToHuman(DataPack));
 
-
+                notification.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     nm.notify(uID,notification.build());
+
                 exh_flag=1;
                 dis_flag=1;
 
@@ -250,6 +252,7 @@ public class DatazIntentService extends IntentService {
             }
             else if(!dataEnabled && totalbytes==0 && dis_flag==0)
             {
+
                 notification.setSmallIcon(R.drawable.mystlogo);
                 notification.setContentTitle("Rem = "+bytesToHuman(remaining));
                 notification.setContentText("Used =" +bytesToHuman(used)+" (Data is disabled)");
@@ -261,6 +264,7 @@ public class DatazIntentService extends IntentService {
                     nm.notify(uID,notification.build());
 
                     dis_flag=1;
+
 
             }
         }
