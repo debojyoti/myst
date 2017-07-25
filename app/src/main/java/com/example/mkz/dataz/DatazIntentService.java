@@ -74,6 +74,7 @@ public class DatazIntentService extends IntentService {
     public int curProgress,totalProgress;
     public long prevBytes;
     public long exh_flag=-1,exp_flag=-1,dis_flag=-1;
+    public int stat_per;
 
     String savedata;
 
@@ -167,7 +168,7 @@ public class DatazIntentService extends IntentService {
             {
 
 /*  *****************(Starts) Updating notification content   *************** */
-                notification.setSmallIcon(R.drawable.mystlogo);
+                //notification.setSmallIcon(R.drawable.mystlogo);
                 notification.setContentTitle("Remaining = "+bytesToHuman(remaining));
                 notification.setContentText("Used =" +bytesToHuman(used)+" (Data is enabled) "+bytesToHuman((double)(totalbytes-prevBytes))+"/s");
                 curProgress=((int)used);
@@ -216,8 +217,51 @@ public class DatazIntentService extends IntentService {
                         mystfileWrite("Remaining.txt",s1);
 /* *************** (Ends)    Keep updating used data and remaining data ****************************** */
 
-            prevBytes=totalbytes;
-                exh_flag=exp_flag=dis_flag=0;
+                 prevBytes=totalbytes;
+                 exh_flag=exp_flag=dis_flag=0;
+
+
+/*  ***********************(Starts)    Dynamic status bar      ********************************* */
+                stat_per=(int)(used*100/DataPack);
+
+                if(stat_per>87)
+                {
+                    notification.setSmallIcon(R.drawable.wheel7);
+
+                }
+                else if(stat_per<=87 && stat_per>75)
+                {
+                    notification.setSmallIcon(R.drawable.wheel6);
+                }
+                else if(stat_per<=75 && stat_per>62)
+                {
+                    notification.setSmallIcon(R.drawable.wheel5);
+                }
+                else if(stat_per<=62 && stat_per>50)
+                {
+                    notification.setSmallIcon(R.drawable.wheel4);
+                }
+                else if(stat_per<=50 && stat_per>37)
+                {
+                    notification.setSmallIcon(R.drawable.wheel3);
+                }
+                else if(stat_per<=37 && stat_per>25)
+                {
+                    notification.setSmallIcon(R.drawable.wheel2);
+                }
+                else if(stat_per<=25 && stat_per>12)
+                {
+                    notification.setSmallIcon(R.drawable.wheel1);
+                }
+                else if(stat_per<=12 && stat_per>=0)
+                {
+                    notification.setSmallIcon(R.drawable.wheel0);
+                }
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                nm.notify(uID,notification.build());
+                System.out.println("Service running stat_per = "+stat_per);
+
+/*  ********************(Ends)    Dynamic status bar      ****************************************** */
 
             }
             else if(((remaining)<4200) && exh_flag==0)
@@ -267,6 +311,8 @@ public class DatazIntentService extends IntentService {
 
 
             }
+
+
         }
     };
 
