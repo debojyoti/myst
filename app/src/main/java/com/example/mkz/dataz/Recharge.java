@@ -55,7 +55,7 @@ public class Recharge extends AppCompatActivity {
     int data = -1;
     String dSize;
     String date;
-    long dataSize;
+    double dataSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +96,7 @@ public class Recharge extends AppCompatActivity {
             public void onClick(View view) {
                 dSize = getRechargeAmount.getText().toString();
                 date = validity.getText().toString();
-                if (dSize.equals("") || dSize.equals("0")) {
+                if (dSize.equals("") || dSize.equals("0") || Double.parseDouble(dSize)<1) {
                     errorDisp.setText("Enter a valid Amount of Data");
 
                 } else {
@@ -164,7 +164,7 @@ public class Recharge extends AppCompatActivity {
     {
 
 
-            long newData = (long) Integer.parseInt(dSize);
+            double newData = Double.parseDouble(dSize);
             if(data==0)      // It signifies that MB is selected by the user
             {
                 newData = newData*1024*1024;
@@ -176,7 +176,7 @@ public class Recharge extends AppCompatActivity {
                 System.out.println("Entered Data in bytes = "+newData);
             }
             dataSize = newData;
-            String data = String.valueOf(newData);
+            String data = String.valueOf((long)newData);
 
             mystfileWrite("RechargeData.txt",data);
             System.out.println("\n\nFrom recharge, string data = "+data);
@@ -209,7 +209,7 @@ public class Recharge extends AppCompatActivity {
             mystfileWrite("Remaining.txt",data);
             mystfileWrite("Initial.txt","0");
             mystfileWrite("Used.txt","0");
-
+            mystfileWrite("Lastbootdata.txt","0");
 
         /* **************** Taking rx+tx at the time of recharge  Starts******************* */
 

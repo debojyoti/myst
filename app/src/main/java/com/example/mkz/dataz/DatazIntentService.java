@@ -20,10 +20,6 @@ package com.example.mkz.dataz;
              
                                                                                 ---- @ Debojyoti
 
-
-
-
-
  */
 
 
@@ -38,6 +34,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.support.v7.app.NotificationCompat;
 import android.text.format.DateFormat;
 import android.view.View;
@@ -54,29 +51,31 @@ import java.text.SimpleDateFormat;
 
 public class DatazIntentService extends IntentService {
 
-
-    NotificationCompat.Builder notification;
-
-    private static final int uID = 123456;
+    NotificationCompat.Builder notification;    //  Sticky notification
+    private static final int uID = 123456;      //  Sticky notification's id
 
 
+    /*  ************ (Starts) values available globally *********** */
+    public long totalbytes;                     //  at any instant of time (current rx + tx values)
+    public long used;                           //  data used out of total datapack
+    public long DataPack;                       //  total data amount
+    public long remaining;                      //  datapack-used
+    /*  ************ (Ends) values available globally *********** */
 
-    public long rxbytes;
-    public long txbytes;
-    public long totalbytes;
-    public long used;
-    public long initial;
-    public long DataPack;
-    public long remaining;
-    public long lastBootData;
+    /*  ************ (Starts) internal variables *********** */
+    public long initial;                        //  reference from current rx+tx , updated only after each recharge or reboots
+    public long lastBootData;                   //  backup the used data amount before a reboot
     public long expDate;
-    public int not_flag=0;
-    public int curProgress,totalProgress;
-    public long prevBytes;
-    public long exh_flag=-1,exp_flag=-1,dis_flag=-1;
-    public int stat_per;
-
+    public int not_flag=0;                      //  notification will  rebuild if service restarts only
+    public int curProgress,totalProgress;       //  holds data to display in sticky notification
+    public long prevBytes;                      //  to display speed
+    public long exh_flag=-1,exp_flag=-1,dis_flag=0; //  flags to control notification building
+    public int stat_per;                        //  calculates percentage for notification's progress bar
+    public long reboot;                         //  it stores current rx+tx (total) to check whether service is restarted or device reboots!
+    public long rxbytes;                        // current rx
+    public long txbytes;                        // current tx
     String savedata;
+    /*  ************ (Ends) internal variables *********** */
 
     public DatazIntentService() {
         super("DatazIntentService");
@@ -164,8 +163,10 @@ public class DatazIntentService extends IntentService {
 
 
 /* **********************(Starts) If data pack exists,then only do works here  ************************ */
-            if(dataEnabled && ((remaining)>=4200) && (diff>0) && totalbytes!=0)
+            if(dataEnabled && ((remaining)>=1024000) && (diff>0) && totalbytes!=0)   // stop at 1 mb
             {
+
+                mystfileWrite("Reboot.txt",String.valueOf(totalbytes));     // recoreds current total
 
 /*  *****************(Starts) Updating notification content   *************** */
                 //notification.setSmallIcon(R.drawable.mystlogo);
@@ -177,6 +178,7 @@ public class DatazIntentService extends IntentService {
 
                 if(not_flag==0)
                 {
+                    notification.setSmallIcon(R.drawable.mystlogo);
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     nm.notify(uID,notification.build());
                     not_flag=1;
@@ -192,15 +194,21 @@ public class DatazIntentService extends IntentService {
                     mystfileWrite("Flag.txt","1");
                 }
 
-                if(totalbytes<initial /*|| totalbytes<1024*/)       // if device reboots
+                if(totalbytes<reboot && totalbytes>0)       // if device reboots
                 {
 
 /* (Starts) backup the previous used data from the "Used.txt" file and store it in the variable lastBootData */
                         String pack = mystfileRead("Used.txt");
                         lastBootData = Long.parseLong(pack);
+                        reboot=totalbytes-1;
 /* (Ends) backup the previous used data from the "Used.txt" file and store it in the variable lastBootData */
                         initial=0;
                         mystfileWrite("Initial.txt","0");  //  Assign initial value = 0
+                        mystfileWrite("Lastbootdata.txt", String.valueOf(lastBootData));
+                }
+                else if(totalbytes>(reboot-1))      // id service restarts
+                {
+                    lastBootData=Long.parseLong(mystfileRead("Lastbootdata.txt"));
                 }
                 used = lastBootData+(totalbytes-initial);          //          Used data from last recharge
                 String s;
@@ -264,7 +272,7 @@ public class DatazIntentService extends IntentService {
 /*  ********************(Ends)    Dynamic status bar      ****************************************** */
 
             }
-            else if(((remaining)<4200) && exh_flag==0)
+            else if(((remaining)<1024000) && exh_flag==0)
             {
                 notification.setSmallIcon(R.drawable.mystlogo);
                 notification.setContentTitle("Exhausted!");
@@ -329,6 +337,7 @@ public class DatazIntentService extends IntentService {
 
 /*  ***************************(Starts) Building notification object ****************************    */
         notification = new NotificationCompat.Builder(DatazIntentService.this);
+        notification.setSmallIcon(R.drawable.mystlogo);
         Intent i = new Intent(DatazIntentService.this,MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(DatazIntentService.this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
         notification.setContentIntent(pi);
@@ -347,6 +356,7 @@ public class DatazIntentService extends IntentService {
         initial = Long.parseLong(remaining1);
         String packData = mystfileRead("RechargeData.txt");
         DataPack = Long.parseLong(packData);
+        reboot = Long.parseLong(mystfileRead("Reboot.txt"));
 /*  ******************** (Starts)  At the start of this service, read 3 files  *************************    */
 
 

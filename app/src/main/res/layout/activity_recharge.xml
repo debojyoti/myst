@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="number"
+        android:inputType="numberDecimal"
         android:text=""
         android:hint="Enter Data pack amount"
         android:layout_marginStart="30dp"

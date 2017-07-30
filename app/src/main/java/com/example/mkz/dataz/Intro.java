@@ -32,10 +32,30 @@ public class Intro extends AppCompatActivity {
 
         }
            /*   ******* Creating file "Reamining.txt" = 0  ends   ************************ */
-
+        mystfileWrite("Reboot.txt","0");
 
         Intent i = new Intent(Intro.this,Recharge.class);
         startActivity(i);
         finish();
+    }
+
+    public void mystfileWrite(String FILENAME,String data_to_write)
+    {
+
+        try
+        {
+            FileOutputStream fileOutputStream = openFileOutput(FILENAME,MODE_PRIVATE);
+
+
+            byte buf[] = data_to_write.getBytes();
+
+            fileOutputStream.write(buf);
+            fileOutputStream.close();
+
+        }
+        catch (Exception e)
+        {
+
+        }
     }
 }
