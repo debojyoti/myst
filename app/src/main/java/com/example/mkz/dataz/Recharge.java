@@ -24,16 +24,21 @@ import android.content.Intent;
 import android.net.TrafficStats;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -47,15 +52,19 @@ public class Recharge extends AppCompatActivity {
 
 /* *************************   Getting and checking valid inputs (Starts)  ******************************* */
 
-
+    RadioGroup mbgb;
     Button addData;
     TextView errorDisp;
+    TextView showwarning;
+    SeekBar setSeek;
     EditText getRechargeAmount;
     EditText validity;
     int data = -1;
     String dSize;
     String date;
     double dataSize;
+    int warn_level=85;
+    double warndata;        //      Contains warning data amount
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +90,190 @@ public class Recharge extends AppCompatActivity {
         {
 
         }
+        mbgb = (RadioGroup) findViewById(R.id.dataType);
+        setSeek = (SeekBar) findViewById(R.id.setSeek);
+        showwarning = (TextView) findViewById(R.id.warning_level);
         addData = (Button) findViewById(R.id.rechargeBtn);
         errorDisp = (TextView) findViewById(R.id.errorDisp);
         getRechargeAmount = (EditText) findViewById(R.id.getRechargeAmount);
         validity = (EditText) findViewById(R.id.validity);
+
+        //mbgb.setVisibility(View.INVISIBLE);
+        setSeek.setVisibility(View.INVISIBLE);
+        showwarning.setVisibility(View.INVISIBLE);
+        addData.setVisibility(View.INVISIBLE);
+        validity.setVisibility(View.INVISIBLE);
+
+        setSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                int progress = 60+((i*30)/6);
+                showwarning.setText("Current warning level = "+progress+" %");
+                warn_level=progress;
+
+                if (!getRechargeAmount.getText().toString().equals("") && !getRechargeAmount.getText().toString().equals(".")) {
+                    if ((Double.parseDouble(getRechargeAmount.getText().toString()) > 1 && data==0) || (Double.parseDouble(getRechargeAmount.getText().toString()) >= 1 && data==1)) {
+                        if (data == 1) {
+                            warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString())*1024*1024*1024) * ((double)warn_level / 100);
+                            String warn = bytesToHuman(warndata);
+                            showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                        } else if (data == 0) {
+                            warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString())*1024*1024) * ((double)warn_level / 100);
+                            String warn = bytesToHuman(warndata);
+                            showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                        }
+                    }
+                }
+
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        validity.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                setSeek.setVisibility(View.VISIBLE);
+                showwarning.setVisibility(View.VISIBLE);
+                addData.setVisibility(View.VISIBLE);
+                if (!getRechargeAmount.getText().toString().equals("")  && !getRechargeAmount.getText().toString().equals(".")) {
+                    if (!validity.getText().toString().equals("") && !validity.getText().toString().equals("0"))
+                    {
+                        if (Double.parseDouble(getRechargeAmount.getText().toString()) <= 1 && (data == 0 || data == -1)) {
+                            errorDisp.setText("Enter Amount Greater than 1 MB");
+                            validity.setVisibility(View.INVISIBLE);
+                            setSeek.setVisibility(View.INVISIBLE);
+                            addData.setVisibility(View.INVISIBLE);
+                            showwarning.setVisibility(View.INVISIBLE);
+                        } else if (Double.parseDouble(getRechargeAmount.getText().toString()) >= 1 && data == 1) {
+                            validity.setVisibility(View.VISIBLE);
+                            addData.setVisibility(View.VISIBLE);;
+                            if (Double.parseDouble(getRechargeAmount.getText().toString()) >= 1) {
+                                if (data == 1) {
+                                    warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString()) * 1024 * 1024 * 1024) * ((double) warn_level / 100);
+                                    String warn = bytesToHuman(warndata);
+                                    showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                                } else if (data == 0) {
+                                    warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString()) * 1024 * 1024) * ((double) warn_level / 100);
+                                    String warn = bytesToHuman(warndata);
+                                    showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                                }
+                            }
+                        }
+                        else if(Double.parseDouble(getRechargeAmount.getText().toString()) > 1 && data == 0) {
+                            validity.setVisibility(View.VISIBLE);
+                            addData.setVisibility(View.VISIBLE);;
+                            if (Double.parseDouble(getRechargeAmount.getText().toString()) >= 1) {
+                                if (data == 1) {
+                                    warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString()) * 1024 * 1024 * 1024) * ((double) warn_level / 100);
+                                    String warn = bytesToHuman(warndata);
+                                    showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                                } else if (data == 0) {
+                                    warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString()) * 1024 * 1024) * ((double) warn_level / 100);
+                                    String warn = bytesToHuman(warndata);
+                                    showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                                }
+                            }
+                        }
+                }
+                else
+                    {
+                        addData.setVisibility(View.INVISIBLE);;
+                    }
+                }
+                else
+                {
+                    errorDisp.setText("Enter Amount Greater than 1 MB");
+                    validity.setVisibility(View.INVISIBLE);
+                    setSeek.setVisibility(View.INVISIBLE);
+                    addData.setVisibility(View.INVISIBLE);
+                    showwarning.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+        getRechargeAmount.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+               // mbgb.setVisibility(View.VISIBLE);
+                if (!getRechargeAmount.getText().toString().equals("")  && !getRechargeAmount.getText().toString().equals(".")) {
+                    if(Double.parseDouble(getRechargeAmount.getText().toString())<=1 && (data==0 || data==-1))
+                    {
+                        errorDisp.setText("Enter Amount Greater than 1 MB");
+                        validity.setVisibility(View.INVISIBLE);
+                        setSeek.setVisibility(View.INVISIBLE);
+                        addData.setVisibility(View.INVISIBLE);
+                        showwarning.setVisibility(View.INVISIBLE);
+                    }
+                    else if((Double.parseDouble(getRechargeAmount.getText().toString())>=1 && data==1) || (Double.parseDouble(getRechargeAmount.getText().toString())>1 && data==0))
+                    {
+
+                        validity.setVisibility(View.VISIBLE);
+                        setSeek.setVisibility(View.VISIBLE);
+                        showwarning.setVisibility(View.VISIBLE);
+                        if(validity.getText().toString().equals("") || validity.getText().toString().equals("0"))
+                        {
+                            addData.setVisibility(View.INVISIBLE);
+                        }
+                        if (Double.parseDouble(getRechargeAmount.getText().toString()) >= 1) {
+                            if (data == 1) {
+                                warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString())*1024*1024*1024) * ((double)warn_level / 100);
+                                String warn = bytesToHuman(warndata);
+                                showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                            } else if (data == 0) {
+                                warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString())*1024*1024) * ((double)warn_level / 100);
+                                String warn = bytesToHuman(warndata);
+                                showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        errorDisp.setText("Enter Amount Greater than 1 MB");
+                    }
+
+
+                }
+                else
+                {
+                    errorDisp.setText("Enter Amount Greater than 1 MB");
+                    validity.setVisibility(View.INVISIBLE);
+                    setSeek.setVisibility(View.INVISIBLE);
+                    addData.setVisibility(View.INVISIBLE);
+                    showwarning.setVisibility(View.INVISIBLE);
+                }
+
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
         getRechargeAmount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -123,9 +312,14 @@ public class Recharge extends AppCompatActivity {
 
     }
     public void onRadioButtonClicked(View view) {
+
+
+
         // Is the button now checked?
         boolean checked = ((RadioButton) view).isChecked();
         errorDisp.setText("");
+
+
         // Check which radio button was clicked
         switch(view.getId()) {
             case R.id.gb:
@@ -139,6 +333,46 @@ public class Recharge extends AppCompatActivity {
                 data = 0;
                 break;
         }
+        if (!getRechargeAmount.getText().toString().equals("")  && !getRechargeAmount.getText().toString().equals(".")) {
+            if(Double.parseDouble(getRechargeAmount.getText().toString())<=1 && (data==0 || data==-1))
+            {
+                errorDisp.setText("Enter Amount Greater than 1 MB");
+                validity.setVisibility(View.INVISIBLE);
+                setSeek.setVisibility(View.INVISIBLE);
+                addData.setVisibility(View.INVISIBLE);
+                showwarning.setVisibility(View.INVISIBLE);
+            }
+            else if((Double.parseDouble(getRechargeAmount.getText().toString())>=1 && data==1) || (Double.parseDouble(getRechargeAmount.getText().toString())>1 && data==0)) {
+                validity.setVisibility(View.VISIBLE);
+                if (!validity.getText().toString().equals("") && !validity.getText().toString().equals("0"))
+                {
+                    setSeek.setVisibility(View.VISIBLE);
+                    addData.setVisibility(View.VISIBLE);
+                    showwarning.setVisibility(View.VISIBLE);
+                    if (Double.parseDouble(getRechargeAmount.getText().toString()) >= 1) {
+                        if (data == 1) {
+                            warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString()) * 1024 * 1024 * 1024) * ((double) warn_level / 100);
+                            String warn = bytesToHuman(warndata);
+                            showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                        } else if (data == 0) {
+                            warndata = (double) (Double.parseDouble(getRechargeAmount.getText().toString()) * 1024 * 1024) * ((double) warn_level / 100);
+                            String warn = bytesToHuman(warndata);
+                            showwarning.setText("Current warning level = " + warn_level + " % (" + warn + ")");
+                        }
+                    }
+            }
+            }
+
+        }
+        else
+        {
+            errorDisp.setText("Enter Amount Greater than 1 MB");
+            validity.setVisibility(View.INVISIBLE);
+            setSeek.setVisibility(View.INVISIBLE);
+            addData.setVisibility(View.INVISIBLE);
+            showwarning.setVisibility(View.INVISIBLE);
+        }
+
     }
     public void showUsage(View v)
     {
@@ -205,7 +439,7 @@ public class Recharge extends AppCompatActivity {
 /* ******************* (Ends) Generating and saving the corresponding Expiry date  ********************* */
 
 
-
+            mystfileWrite("Warning.txt",String.valueOf((long)warndata));
             mystfileWrite("Remaining.txt",data);
             mystfileWrite("Initial.txt","0");
             mystfileWrite("Used.txt","0");
@@ -286,6 +520,32 @@ public class Recharge extends AppCompatActivity {
     }
 
     /* ***************** (Ends)   File read and write functions   *************** */
+
+
+    public static String bytesToHuman (double size)
+    {
+        double Kb = 1  * 1024;
+        double Mb = Kb * 1024;
+        double Gb = Mb * 1024;
+        double Tb = Gb * 1024;
+        double Pb = Tb * 1024;
+        double Eb = Pb * 1024;
+
+        if (size <  Kb)                 return floatForm(        size     ) + " byte";
+        if (size >= Kb && size < Mb)    return floatForm((double)size / Kb) + " KB";
+        if (size >= Mb && size < Gb)    return floatForm((double)size / Mb) + " MB";
+        if (size >= Gb && size < Tb)    return floatForm((double)size / Gb) + " GB";
+        if (size >= Tb && size < Pb)    return floatForm((double)size / Tb) + " TB";
+        if (size >= Pb && size < Eb)    return floatForm((double)size / Pb) + " PB";
+        if (size >= Eb)                 return floatForm((double)size / Eb) + " EB";
+
+        return "???";
+    }
+    // [custom function ] sets decimal format for bytesToHuman
+    public static String floatForm (double d)
+    {
+        return new DecimalFormat("#.##").format(d);
+    }
 
 }
 

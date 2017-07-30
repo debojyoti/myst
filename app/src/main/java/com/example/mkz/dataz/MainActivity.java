@@ -133,6 +133,10 @@ public class MainActivity extends AppCompatActivity {
             startService(intent2);
         }
 
+        TextView warningshow = (TextView) findViewById(R.id.warningstatus);
+        warningshow.setText("Warning at data = "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
+        System.out.println("Main Activity = warning = "+mystfileRead("Warning.txt"));
+
 
 
 
