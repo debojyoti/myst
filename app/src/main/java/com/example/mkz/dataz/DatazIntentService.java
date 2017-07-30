@@ -265,8 +265,8 @@ public class DatazIntentService extends IntentService {
                 {
                     notification.setSmallIcon(R.drawable.wheel0);
                 }
-                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                nm.notify(uID,notification.build());
+                //NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+               // nm.notify(uID,notification.build());
                 System.out.println("Service running stat_per = "+stat_per);
 
 /*  ********************(Ends)    Dynamic status bar      ****************************************** */
