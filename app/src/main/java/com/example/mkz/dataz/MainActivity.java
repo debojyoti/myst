@@ -131,11 +131,6 @@ public class MainActivity extends AppCompatActivity {
             {
                 dateReamining.setText("Data pack expired!");
             }
-            else if(diff==1)
-            {
-                dateReamining.setText("Data Pack will expire tonight!");
-                dataRemaining.setTextSize(14);
-            }
             else
             {
                 dateReamining.setText(diff+" Days Remaining");
