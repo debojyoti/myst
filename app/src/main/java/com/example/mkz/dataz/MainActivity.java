@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.net.TrafficStats;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -35,7 +36,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import az.plainpie.PieView;
+import az.plainpie.animation.PieAngleAnimation;
+
 public class MainActivity extends AppCompatActivity {
+    PieView animatedPie;
+    PieView animatedPie2;
+    TextView warningshow;
 
     public double rxbytes;
     public double txbytes;
@@ -45,6 +52,11 @@ public class MainActivity extends AppCompatActivity {
     public double DataPack;
     public double remaining;
     public String storedDay;
+    public int stat_per;
+    TextView txtt;
+    PieAngleAnimation animation;
+    public  int f;
+    public int time;
 
 
 
@@ -87,10 +99,14 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-            TextView usedData = (TextView) findViewById(R.id.Dataused);
-            TextView dataRemaining = (TextView) findViewById(R.id.dataRemaining);
-            TextView dataPack = (TextView) findViewById(R.id.DataPack);
-            TextView dateReamining = (TextView) findViewById(R.id.dateRemaining);
+            TextView usedData = (TextView) findViewById(R.id.textView9);
+            TextView dataRemaining = (TextView) findViewById(R.id.textView8);
+            TextView dataPack = (TextView) findViewById(R.id.textView7);
+            TextView dateReamining = (TextView) findViewById(R.id.textView3);
+            TextView dailyburnrate = (TextView) findViewById(R.id.textView5);
+            txtt = (TextView) findViewById(R.id.txtt);
+
+                warningshow.setText("Next warning at "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
 
 
             /*double MBused,MBremaining,MBpack;
@@ -99,26 +115,38 @@ public class MainActivity extends AppCompatActivity {
             MBremaining = ((remaining/1024)/1024);
             MBused = ((used/1024)/1024);*/
 
-            usedData.setText(bytesToHuman(used));
+            usedData.setText("Used : "+bytesToHuman(used));
             if(remaining<=1000000)      // 1 mb
             {
-                dataRemaining.setText("Data Pack Exhausted!");
+                dataRemaining.setText("Remainingk : Exhausted!");
             }
             else
             {
-                dataRemaining.setText(bytesToHuman(remaining));
+                dataRemaining.setText("Remaining = "+bytesToHuman(remaining));
             }
 
-            dataPack.setText(bytesToHuman(DataPack));
+            dataPack.setText("Data pack : "+bytesToHuman(DataPack));
 
             if(diff==0)
             {
                 dateReamining.setText("Data pack expired!");
             }
+            else if(diff==1)
+            {
+                dateReamining.setText("Data Pack will expire tonight!");
+                dataRemaining.setTextSize(14);
+            }
             else
             {
-                dateReamining.setText(diff+" days");
+                dateReamining.setText(diff+" Days Remaining");
             }
+
+            stat_per=(int)(used*100/DataPack);
+            txtt.setText((100-stat_per)+"%");
+
+            animatedPie.setPercentage((float)100-stat_per);
+
+
 
         }
     };
@@ -133,17 +161,46 @@ public class MainActivity extends AppCompatActivity {
             startService(intent2);
         }
 
-        TextView warningshow = (TextView) findViewById(R.id.warningstatus);
-        warningshow.setText("Warning at data = "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
-        System.out.println("Main Activity = warning = "+mystfileRead("Warning.txt"));
-
-
-
+        String pack = mystfileRead("Used.txt");
+        used = Double.parseDouble(pack);
 
 /* ******************   Read datapack value once  (Starts) ************************************** */
-            String pack = mystfileRead("RechargeData.txt");
-            DataPack = Double.parseDouble(pack);
+        String pack1 = mystfileRead("RechargeData.txt");
+        DataPack = Double.parseDouble(pack1);
 /* ******************   Read datapack value once  (Ends) ************************************** */
+
+        stat_per=(int)(used*100/DataPack);
+
+        animatedPie = (PieView) findViewById(R.id.animated_pie_view_1);
+
+        animatedPie.setPercentage((float)100-stat_per);
+        animation = new PieAngleAnimation(animatedPie);
+        animatedPie.setMainBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.customColor5));
+
+
+        animation.setDuration(1000); //This is the duration of the animation in millis
+        animatedPie.startAnimation(animation);
+        animatedPie.setPercentageTextSize(0);
+        animatedPie.setPercentageBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.perecentcircle));
+        animatedPie.setInnerBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.customColor5));
+        animatedPie2 = (PieView) findViewById(R.id.animated_pie_view_2);
+
+        PieAngleAnimation animation2 = new PieAngleAnimation(animatedPie2);
+        animatedPie2.setMainBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.dailyperbg));
+
+        animation2.setDuration(1000); //This is the duration of the animation in millis
+        animatedPie2.startAnimation(animation2);
+        animatedPie2.setPercentageTextSize(0);
+        animatedPie2.setPercentageBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.dailyper));
+        animatedPie2.setInnerBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.dailyperbg));
+
+        warningshow = (TextView) findViewById(R.id.textView4);
+        warningshow.setText("Next warning at "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
+        System.out.println("Next Warning at  "+mystfileRead("Warning.txt")+" usage");
+
+
+
+
 
 
         Runnable r = new Runnable() {

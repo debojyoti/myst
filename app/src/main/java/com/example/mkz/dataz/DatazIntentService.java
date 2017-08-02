@@ -26,6 +26,7 @@ package com.example.mkz.dataz;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -36,8 +37,10 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.support.v7.app.NotificationCompat;
+import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
 import android.view.View;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.io.FileInputStream;
@@ -52,14 +55,18 @@ import java.text.SimpleDateFormat;
 public class DatazIntentService extends IntentService {
 
     NotificationCompat.Builder notification;    //  Sticky notification
+    NotificationCompat.Builder warning1;    //  Sticky notification
+    NotificationCompat.Builder warning2;    //  Sticky notification
     private static final int uID = 123456;      //  Sticky notification's id
-
+    private static final int w1ID = 123451;      //  Sticky notification's id
+    private static final int w2ID = 123452;      //  Sticky notification's id
 
     /*  ************ (Starts) values available globally *********** */
     public long totalbytes;                     //  at any instant of time (current rx + tx values)
     public long used;                           //  data used out of total datapack
     public long DataPack;                       //  total data amount
     public long remaining;                      //  datapack-used
+    public long warning;                        //  user-defined warning level(in bytes)
     /*  ************ (Ends) values available globally *********** */
 
     /*  ************ (Starts) internal variables *********** */
@@ -74,6 +81,7 @@ public class DatazIntentService extends IntentService {
     public long reboot;                         //  it stores current rx+tx (total) to check whether service is restarted or device reboots!
     public long rxbytes;                        // current rx
     public long txbytes;                        // current tx
+    public long warn_flag;
     String savedata;
     /*  ************ (Ends) internal variables *********** */
 
@@ -271,21 +279,68 @@ public class DatazIntentService extends IntentService {
 
 /*  ********************(Ends)    Dynamic status bar      ****************************************** */
 
+
+/*  *******************(Starts)     Warnings  ************** */
+                if(remaining<=warning && warn_flag==0)
+                {
+                    warning1 = new NotificationCompat.Builder(DatazIntentService.this);
+                    warning1.setAutoCancel(true);
+                    RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.custom_push);
+                    contentView.setImageViewResource(R.id.image, R.mipmap.ic_launcher);
+                    contentView.setTextViewText(R.id.title, "Custom notification");
+                    contentView.setTextViewText(R.id.text, "This is a custom layout");
+
+                    warning1.setSmallIcon(R.drawable.mystlogo);
+                    warning1.setContent(contentView);
+                    warning1.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
+
+
+                    Intent i = new Intent(DatazIntentService.this,MainActivity.class);
+
+                    PendingIntent pi = PendingIntent.getActivity(DatazIntentService.this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    warning1.setContentIntent(pi);
+
+                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.notify(w1ID,warning1.build());
+
+                    warn_flag=1;
+                    mystfileWrite("Warning.txt","1048576");
+                    mystfileWrite("Warnflag.txt","1");
+                }
+/*  *******************(Ends)     Warnings  ************** */
+
+
             }
             else if(((remaining)<1024000) && exh_flag==0)
             {
+                warning2 = new NotificationCompat.Builder(DatazIntentService.this);
+                warning2.setAutoCancel(true);
+                RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.custom_push);
+                contentView.setImageViewResource(R.id.image, R.mipmap.ic_launcher);
+                contentView.setTextViewText(R.id.title, "Custom notification");
+                contentView.setTextViewText(R.id.text, "This is a custom layout");
+                warning2.setSmallIcon(R.drawable.mystlogo);
+                warning2.setContent(contentView);
+                warning2.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
+                Intent i = new Intent(DatazIntentService.this,MainActivity.class);
+                PendingIntent pi = PendingIntent.getActivity(DatazIntentService.this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+                warning2.setContentIntent(pi);
+                NotificationManager nm1 = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                nm1.notify(w2ID,warning2.build());
+
+
+
                 notification.setSmallIcon(R.drawable.mystlogo);
                 notification.setContentTitle("Exhausted!");
                 notification.setContentText("Data Pack = "+bytesToHuman(DataPack));
-
                 notification.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     nm.notify(uID,notification.build());
 
+                mystSwitchData();
                 exh_flag=1;
                 dis_flag=1;
-
-
             }
             else if((diff<=0) && exp_flag==0)
             {
@@ -334,6 +389,7 @@ public class DatazIntentService extends IntentService {
 
         lastBootData=0;
         prevBytes=TrafficStats.getMobileTxBytes()+TrafficStats.getMobileRxBytes();
+        warn_flag=Integer.parseInt(mystfileRead("Warnflag.txt"));
 
 /*  ***************************(Starts) Building notification object ****************************    */
         notification = new NotificationCompat.Builder(DatazIntentService.this);
@@ -357,6 +413,7 @@ public class DatazIntentService extends IntentService {
         String packData = mystfileRead("RechargeData.txt");
         DataPack = Long.parseLong(packData);
         reboot = Long.parseLong(mystfileRead("Reboot.txt"));
+        warning = Long.parseLong(mystfileRead("Warning.txt"));
 /*  ******************** (Starts)  At the start of this service, read 3 files  *************************    */
 
 
@@ -395,6 +452,48 @@ public class DatazIntentService extends IntentService {
     }
 
 
+    public void mystSwitchData()
+    {
+        try {
+            Intent intent1 = new Intent("com.example.mkz.data.DatazIntentService");
+            Method dataConnSwitchmethod = null;
+            Class telephonyManagerClass;
+            Object ITelephonyStub;
+            Class ITelephonyClass;
+            boolean isEnabled;
+
+            TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext()
+                    .getSystemService(Context.TELEPHONY_SERVICE);
+
+            if(telephonyManager.getDataState() == TelephonyManager.DATA_CONNECTED){
+                isEnabled = true;
+            }else{
+                isEnabled = false;
+            }
+            //turn off data starts
+            telephonyManagerClass = Class.forName(telephonyManager.getClass().getName());
+            Method getITelephonyMethod = telephonyManagerClass.getDeclaredMethod("getITelephony");
+            getITelephonyMethod.setAccessible(true);
+            ITelephonyStub = getITelephonyMethod.invoke(telephonyManager);
+            ITelephonyClass = Class.forName(ITelephonyStub.getClass().getName());
+            if (isEnabled)
+            {
+                dataConnSwitchmethod = ITelephonyClass.getDeclaredMethod("disableDataConnectivity");
+            }
+            dataConnSwitchmethod.setAccessible(true);
+            dataConnSwitchmethod.invoke(ITelephonyStub);
+            //turn off data ends
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setComponent(new ComponentName("com.android.settings","com.android.settings.Settings$DataUsageSummaryActivity"));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
 
 
     /* ***************** (Starts)   File read and write functions   *************** */
@@ -422,6 +521,7 @@ public class DatazIntentService extends IntentService {
             fileOutputStream.close();
 
         }
+
         catch (Exception e)
         {
 

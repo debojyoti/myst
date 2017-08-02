@@ -14,6 +14,14 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.transitionseverywhere.Fade;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,12 +29,37 @@ import java.io.FileOutputStream;
 import java.util.Date;
 
 public class Launch extends AppCompatActivity {
+
+
+    private TextView mLabelText;
+    private Fade mFade;
+    private ViewGroup mRootView;
+    Animation slideUpAnimation, slideDownAnimation;
+    ImageView imageView, imageView2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
+
+
+
+        imageView = (ImageView) findViewById(R.id.imageView2);
+        imageView2 = (ImageView) findViewById(R.id.imageView3);
+
+
+
+
+        View view = findViewById(android.R.id.content);
+        Animation mLoadAnimation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.fade_in);
+        mLoadAnimation.setDuration(1000);
+        view.startAnimation(mLoadAnimation);
+        slideUpAnimation = AnimationUtils.loadAnimation(getApplicationContext(),
+                R.anim.slide_up_animation);
+
+        imageView.startAnimation(slideUpAnimation);
+        imageView2.startAnimation(slideUpAnimation);
         Thread th = new Thread()   //  This is the thread which will redirect the launching page to another activity after 1 second
         {
             @Override
