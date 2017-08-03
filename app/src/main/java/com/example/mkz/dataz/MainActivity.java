@@ -105,6 +105,10 @@ public class MainActivity extends AppCompatActivity {
             TextView dateReamining = (TextView) findViewById(R.id.textView3);
             TextView dailyburnrate = (TextView) findViewById(R.id.textView5);
             txtt = (TextView) findViewById(R.id.txtt);
+            TextView textView5 = (TextView) findViewById(R.id.textView5);
+            TextView textView6 = (TextView) findViewById(R.id.textView6);
+
+
 
                 warningshow.setText("Next warning at "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
 
@@ -135,11 +139,13 @@ public class MainActivity extends AppCompatActivity {
             {
                 dateReamining.setText(diff+" Days Remaining");
             }
-
+            textView5.setText("Daily burn rate : "+(bytesToHuman(DataPack/diff)));
+            textView6.setText("Burned : "+((bytesToHuman(used))));
             stat_per=(int)(used*100/DataPack);
             txtt.setText((100-stat_per)+"%");
 
             animatedPie.setPercentage((float)100-stat_per);
+            animatedPie2.setPercentage((float)100-(float)(used*100/(DataPack/diff)));
 
 
 
@@ -154,6 +160,23 @@ public class MainActivity extends AppCompatActivity {
         {
             Intent intent2 = new Intent(MainActivity.this,DatazIntentService.class);
             startService(intent2);
+        }
+
+        Date d = new Date(new Date().getTime());
+        String sysDate  = (String) DateFormat.format("MM-dd-yyyy", d.getTime());
+        String packDate = mystfileRead("ExpDate.txt");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+        long diff=1;
+        String days="";
+        try {
+            Date date1 = sdf.parse(sysDate);
+            Date date2 = sdf.parse(packDate);
+            diff = date2.getTime() - date1.getTime();
+            diff = TimeUnit.DAYS.convert(diff, TimeUnit.DAYS) ;
+            diff/= (1000*60*60*24);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         String pack = mystfileRead("Used.txt");
@@ -180,8 +203,10 @@ public class MainActivity extends AppCompatActivity {
         animatedPie.setInnerBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.customColor5));
         animatedPie2 = (PieView) findViewById(R.id.animated_pie_view_2);
 
+        animatedPie2.setPercentage((float)100-(float)(used*100/(DataPack/diff)));
         PieAngleAnimation animation2 = new PieAngleAnimation(animatedPie2);
         animatedPie2.setMainBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.dailyperbg));
+
 
         animation2.setDuration(1000); //This is the duration of the animation in millis
         animatedPie2.startAnimation(animation2);

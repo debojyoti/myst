@@ -88,9 +88,10 @@
         android:background="@drawable/daily_bc"
         android:layout_height="80dp"
         android:layout_marginTop="470dp"
+
         android:layout_marginLeft="260dp"
         plainpie:inner_pie_padding="10"
-        plainpie:percentage="70"
+        plainpie:percentage="1"
         plainpie:percentage_size="0"
         plainpie:inner_text_visibility="true"/>
 
@@ -209,7 +210,7 @@
         android:layout_alignLeft="@+id/imageView5"
         android:layout_alignStart="@+id/imageView5"
         android:textColor="#ffffff"
-        android:textSize="18dp"
+        android:textSize="17dp"
         android:layout_alignTop="@+id/relativeLayout2"
         android:layout_marginTop="94dp"
         android:text="Data Pack : 10 GB" />
