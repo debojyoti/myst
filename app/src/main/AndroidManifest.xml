@@ -52,7 +52,9 @@
         </receiver>
 
         <activity android:name=".Recharge" />
-        <activity android:name=".Intro"></activity>
+        <activity android:name=".Intro" />
+        <activity android:name=".AddData" />
+        <activity android:name=".ChangeValidity"></activity>
     </application>
 
 </manifest>

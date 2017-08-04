@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:plainpie="http://schemas.android.com/apk/res-auto"
+
+    android:id="@+id/datalayout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentStart="true"
+    android:background="#001621">
+
+
+    <ImageView
+        android:id="@+id/imageView6"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        plainpie:srcCompat="@drawable/main_ac_logo"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:id="@+id/button6"
+        android:layout_marginTop="25dp"
+        android:onClick="backToMainActivity"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:background="@drawable/single_back"
+        android:layout_marginStart="18dp"
+        android:text=""
+        android:layout_alignTop="@+id/imageView6"
+        android:layout_alignParentStart="true" />
+
+    <RelativeLayout
+        android:layout_width="340dp"
+        android:layout_height="170dp"
+        android:background="#012535"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="14dp"
+        android:id="@+id/relativeLayout4"
+        android:layout_below="@+id/button6"
+        android:layout_centerHorizontal="true">
+
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Current Data Pack : 1024 GB"
+            android:textColor="#04a82b"
+            android:textSize="20dp"
+            android:layout_marginTop="15dp"
+            android:layout_below="@+id/textView11"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15dp"
+            android:textColor="#ff1212"
+            android:text="Currently Remaining : 500 MB"
+            android:layout_marginTop="35dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/textView12" />
+
+        <ImageView
+            android:id="@+id/imageView7"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            plainpie:srcCompat="@drawable/add_green"
+            android:layout_below="@+id/textView12"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="13dp" />
+    </RelativeLayout>
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="290dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/relativeLayout4"
+        android:layout_centerHorizontal="true"
+        android:textColorHint="#7ac48a"
+        android:textAlignment="center"
+        android:layout_marginTop="13dp"
+        android:background="#04a82b"
+        android:ems="10"
+        android:textColor="#fff"
+        android:hint="Enter Data Amount"
+        android:inputType="numberDecimal"
+        android:text="" />
+    <RadioGroup
+        android:id="@+id/dataType"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_below="@+id/editText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp">
+
+        <RadioButton
+            android:id="@+id/mb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
+            android:checked="true"
+            android:onClick="onRadioButtonClicked"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="MB"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
+
+
+        <RadioButton
+            android:id="@+id/gb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/rbtn_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:onClick="onRadioButtonClicked"
+            android:padding="5dp"
+            android:text="GB"
+            android:textColor="@drawable/rbtn_textcolor_selector" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="170dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="36dp"
+        android:background="@drawable/add_data_extra"
+        android:text=""
+
+        android:visibility="invisible"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/textView16"
+        android:layout_width="wrap_content"
+        android:textColor="#ed1c24"
+        android:textSize="19dp"
+        android:layout_height="wrap_content"
+        android:text="Add More Data"
+        android:layout_above="@+id/relativeLayout4"
+        android:layout_alignEnd="@+id/relativeLayout4" />
+
+</RelativeLayout>

@@ -418,6 +418,8 @@ public class Recharge extends AppCompatActivity {
         mystfileWrite("Initial.txt","0");
         mystfileWrite("Used.txt","0");
         mystfileWrite("Lastbootdata.txt","0");
+        mystfileWrite("Reset.txt","0");
+        mystfileWrite("Warnflag.txt", "0");
 
         /* **************** Taking rx+tx at the time of recharge  Starts******************* */
 

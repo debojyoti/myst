@@ -83,6 +83,7 @@ public class DatazIntentService extends IntentService {
     public long txbytes;                        // current tx
     public long warn_flag;
     String savedata;
+    NotificationManager nm ;
     /*  ************ (Ends) internal variables *********** */
 
     public DatazIntentService() {
@@ -94,9 +95,10 @@ public class DatazIntentService extends IntentService {
         @Override
         public void handleMessage(Message msg) {
 
-        rxbytes = TrafficStats.getMobileRxBytes();
-        txbytes = TrafficStats.getMobileTxBytes();
-        totalbytes = rxbytes+txbytes;   // current rx+tx
+            rxbytes = TrafficStats.getMobileRxBytes();
+            txbytes = TrafficStats.getMobileTxBytes();
+            totalbytes = rxbytes + txbytes;   // current rx+tx
+            nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
 
 /* **********************(Starts) Checking whether systemDate is lesser than data pack exp date  ************************ */
@@ -107,7 +109,7 @@ public class DatazIntentService extends IntentService {
             */
 
             Date d = new Date(new Date().getTime());
-            String sysDate  = (String) DateFormat.format("MM-dd-yyyy", d.getTime());
+            String sysDate = (String) DateFormat.format("MM-dd-yyyy", d.getTime());
             String packDate = mystfileRead("ExpDate.txt");
 
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
@@ -124,17 +126,25 @@ public class DatazIntentService extends IntentService {
             SimpleDateFormat sdf1 = new SimpleDateFormat("MM-dd-yyyy");
             String output = sdf1.format(c.getTime());
             System.out.println("Updated Date = "+output);*/
-            long diff=1;
-            String days="";
+            long diff = 1;
+            String days = "";
             try {
                 Date date1 = sdf.parse(sysDate);
                 Date date2 = sdf.parse(packDate);
                 diff = date2.getTime() - date1.getTime();
-                diff = TimeUnit.DAYS.convert(diff, TimeUnit.DAYS) ;
-                diff/= (1000*60*60*24);
+                diff = TimeUnit.DAYS.convert(diff, TimeUnit.DAYS);
+                diff /= (1000 * 60 * 60 * 24);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            String pack2 = mystfileRead("Remaining.txt");
+            remaining = Long.parseLong(pack2);
+            String packData = mystfileRead("RechargeData.txt");
+            DataPack = Long.parseLong(packData);
+
+            packData = mystfileRead("Used.txt");
+            used = Long.parseLong(packData);
 
 
 /* **********************(Ends) Checking whether systemDate is lesser than data pack exp date  ************************ */
@@ -148,15 +158,19 @@ public class DatazIntentService extends IntentService {
 
 
 /* ****************************(Starts) Testing output (for personal use : Debojyoti) ******************************** */
-            System.out.println("\n\nservice running, data = "+String.valueOf(dataEnabled)+"\n");
-            System.out.println("\nservice running, data reamining = "+remaining+"\n");
-            System.out.println("\nservice running, data pack = "+DataPack+"\n");
-            System.out.println("\nservice running, used = "+used+"\n");
-            System.out.println("\nservice running, initial = "+initial+"\n");
-            System.out.println("\nservice running, lastbootdata = "+lastBootData+"\n");
+            System.out.println("\n\nservice running, data = " + String.valueOf(dataEnabled) + "\n");
+            System.out.println("\nservice running, data reamining = " + remaining + "\n");
+            System.out.println("\nservice running, data pack = " + DataPack + "\n");
+            System.out.println("\nservice running, used = " + used + "\n");
+            System.out.println("\nservice running, initial = " + initial + "\n");
+            System.out.println("\nservice running, lastbootdata = " + lastBootData + "\n");
             //System.out.println("\nservice running, totalP = "+totalProgress+" curP = "+curProgress+"\n");
-            System.out.println("\nservice running, flag = "+mystfileRead("Flag.txt")+"\n");
-            System.out.println("\nservice running, day rem = "+(diff)+"\n\n");
+            System.out.println("\nservice running, flag = " + mystfileRead("Flag.txt") + "\n");
+            System.out.println("\nservice running, day rem = " + (diff) + "\n\n");
+
+            notification.setContentTitle("Remaining = " + bytesToHuman(remaining));
+            notification.setContentText("Used =" + bytesToHuman(used) + " (Data is enabled) " + bytesToHuman((double) (totalbytes - prevBytes)) + "/s");
+
 /* ****************************(Ends) Testing output (for personal use : Debojyoti) ******************************** */
 
 
@@ -168,212 +182,204 @@ public class DatazIntentService extends IntentService {
 
 
 
-
-
-/* **********************(Starts) If data pack exists,then only do works here  ************************ */
-            if(dataEnabled && ((remaining)>=1024000) && (diff>0) && totalbytes!=0)   // stop at 1 mb
+            if(mystfileRead("Reset.txt").equals("0"))
             {
 
-                mystfileWrite("Reboot.txt",String.valueOf(totalbytes));     // recoreds current total
+/* **********************(Starts) If data pack exists,then only do works here  ************************ */
+            if (dataEnabled && ((remaining) >= 102400) && (diff > 0) && totalbytes != 0)   // stop at 1 mb
+            {
+
+                mystfileWrite("Reboot.txt", String.valueOf(totalbytes));     // recoreds current total
 
 /*  *****************(Starts) Updating notification content   *************** */
                 //notification.setSmallIcon(R.drawable.mystlogo);
-                notification.setContentTitle("Remaining = "+bytesToHuman(remaining));
-                notification.setContentText("Used =" +bytesToHuman(used)+" (Data is enabled) "+bytesToHuman((double)(totalbytes-prevBytes))+"/s");
-                curProgress=((int)used);
-                totalProgress=(int)DataPack;
+                notification.setContentTitle("Remaining = " + bytesToHuman(remaining));
+                notification.setContentText("Used =" + bytesToHuman(used) + " (Data is enabled) " + bytesToHuman((double) (totalbytes - prevBytes)) + "/s");
+                curProgress = ((int) used);
+                totalProgress = (int) DataPack;
                 notification.setProgress(totalProgress, curProgress, false);
 
-                if(not_flag==0)
-                {
+                if (not_flag == 0) {
                     notification.setSmallIcon(R.drawable.mystlogo);
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    nm.notify(uID,notification.build());
-                    not_flag=1;
+                    nm.notify(uID, notification.build());
+                    not_flag = 1;
                 }
 /*  *******************(Ends) Updating notification content******************  */
 
 
-                System.out.println("\nservice running, cur total bytes = "+String.valueOf(totalbytes)+"\n");
-                if(mystfileRead("Flag.txt").equals("0"))    // flag will be 0 if new recharge is done
+                System.out.println("\nservice running, cur total bytes = " + String.valueOf(totalbytes) + "\n");
+                if (mystfileRead("Flag.txt").equals("0"))    // flag will be 0 if new recharge is done
                 {
-                    mystfileWrite("Initial.txt",String.valueOf(totalbytes));
-                    initial=totalbytes;
-                    mystfileWrite("Flag.txt","1");
+                    mystfileWrite("Initial.txt", String.valueOf(totalbytes));
+                    initial = totalbytes;
+                    mystfileWrite("Flag.txt", "1");
                 }
 
-                if(totalbytes<reboot && totalbytes>0)       // if device reboots
+                if (totalbytes < reboot && totalbytes > 0)       // if device reboots
                 {
 
 /* (Starts) backup the previous used data from the "Used.txt" file and store it in the variable lastBootData */
-                        String pack = mystfileRead("Used.txt");
-                        lastBootData = Long.parseLong(pack);
-                        reboot=totalbytes-1;
+                    String pack = mystfileRead("Used.txt");
+                    lastBootData = Long.parseLong(pack);
+                    reboot = totalbytes - 1;
 /* (Ends) backup the previous used data from the "Used.txt" file and store it in the variable lastBootData */
-                        initial=0;
-                        mystfileWrite("Initial.txt","0");  //  Assign initial value = 0
-                        mystfileWrite("Lastbootdata.txt", String.valueOf(lastBootData));
-                }
-                else if(totalbytes>(reboot-1))      // id service restarts
+                    initial = 0;
+                    mystfileWrite("Initial.txt", "0");  //  Assign initial value = 0
+                    mystfileWrite("Lastbootdata.txt", String.valueOf(lastBootData));
+                } else if (totalbytes > (reboot - 1))      // id service restarts
                 {
-                    lastBootData=Long.parseLong(mystfileRead("Lastbootdata.txt"));
+                    lastBootData = Long.parseLong(mystfileRead("Lastbootdata.txt"));
                 }
-                used = lastBootData+(totalbytes-initial);          //          Used data from last recharge
+                used = lastBootData + (totalbytes - initial);          //          Used data from last recharge
                 String s;
-
 
 
                 s = String.valueOf(used);
 
 /* *************** (Starts)    Keep updating used data and remaining data ****************************** */
-                        savedata = s;
-                        mystfileWrite("Used.txt",savedata);
-                        remaining = DataPack-used;
-                        String s1 = String.valueOf(remaining);
-                        mystfileWrite("Remaining.txt",s1);
+                savedata = s;
+                mystfileWrite("Used.txt", savedata);
+                remaining = DataPack - used;
+                String s1 = String.valueOf(remaining);
+                mystfileWrite("Remaining.txt", s1);
 /* *************** (Ends)    Keep updating used data and remaining data ****************************** */
 
-                 prevBytes=totalbytes;
-                 exh_flag=exp_flag=dis_flag=0;
+                prevBytes = totalbytes;
+                exh_flag = exp_flag = dis_flag = 0;
 
 
 /*  ***********************(Starts)    Dynamic status bar      ********************************* */
-                stat_per=(int)(used*100/DataPack);
+                stat_per = (int) (used * 100 / DataPack);
 
-                if(stat_per>87)
-                {
+                if (stat_per > 87) {
                     notification.setSmallIcon(R.drawable.wheel7);
 
-                }
-                else if(stat_per<=87 && stat_per>75)
-                {
+                } else if (stat_per <= 87 && stat_per > 75) {
                     notification.setSmallIcon(R.drawable.wheel6);
-                }
-                else if(stat_per<=75 && stat_per>62)
-                {
+                } else if (stat_per <= 75 && stat_per > 62) {
                     notification.setSmallIcon(R.drawable.wheel5);
-                }
-                else if(stat_per<=62 && stat_per>50)
-                {
+                } else if (stat_per <= 62 && stat_per > 50) {
                     notification.setSmallIcon(R.drawable.wheel4);
-                }
-                else if(stat_per<=50 && stat_per>37)
-                {
+                } else if (stat_per <= 50 && stat_per > 37) {
                     notification.setSmallIcon(R.drawable.wheel3);
-                }
-                else if(stat_per<=37 && stat_per>25)
-                {
+                } else if (stat_per <= 37 && stat_per > 25) {
                     notification.setSmallIcon(R.drawable.wheel2);
-                }
-                else if(stat_per<=25 && stat_per>12)
-                {
+                } else if (stat_per <= 25 && stat_per > 12) {
                     notification.setSmallIcon(R.drawable.wheel1);
-                }
-                else if(stat_per<=12 && stat_per>=0)
-                {
+                } else if (stat_per <= 12 && stat_per >= 0) {
                     notification.setSmallIcon(R.drawable.wheel0);
                 }
                 //NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-               // nm.notify(uID,notification.build());
-                System.out.println("Service running stat_per = "+stat_per);
+                // nm.notify(uID,notification.build());
+                System.out.println("Service running stat_per = " + stat_per);
 
 /*  ********************(Ends)    Dynamic status bar      ****************************************** */
 
 
 /*  *******************(Starts)     Warnings  ************** */
-                if(remaining<=warning && warn_flag==0)
-                {
+                if (remaining <= warning && warn_flag == 0) {
                     warning1 = new NotificationCompat.Builder(DatazIntentService.this);
                     warning1.setAutoCancel(true);
                     RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.custom_push);
                     contentView.setImageViewResource(R.id.image, R.mipmap.ic_launcher);
-                    contentView.setTextViewText(R.id.title, "Custom notification");
-                    contentView.setTextViewText(R.id.text, "This is a custom layout");
+                    contentView.setTextViewText(R.id.title, "Data warning!");
+                    contentView.setTextViewText(R.id.text, "Your data pack will get exhausted soon!");
 
                     warning1.setSmallIcon(R.drawable.mystlogo);
                     warning1.setContent(contentView);
-                    warning1.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
+                    warning1.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
 
 
-                    Intent i = new Intent(DatazIntentService.this,MainActivity.class);
+                    Intent i = new Intent(DatazIntentService.this, MainActivity.class);
 
-                    PendingIntent pi = PendingIntent.getActivity(DatazIntentService.this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+                    PendingIntent pi = PendingIntent.getActivity(DatazIntentService.this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     warning1.setContentIntent(pi);
 
-                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    nm.notify(w1ID,warning1.build());
+                    nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.notify(w1ID, warning1.build());
 
-                    warn_flag=1;
-                    mystfileWrite("Warning.txt","1048576");
-                    mystfileWrite("Warnflag.txt","1");
+                    mystfileWrite("Warning.txt", "1048576");
+                    if(warning==1048576)
+                    {
+                        mystfileWrite("Warnflag.txt", "1");
+
+                        warn_flag = 1;
+                    }
+
                 }
 /*  *******************(Ends)     Warnings  ************** */
 
 
-            }
-            else if(((remaining)<1024000) && exh_flag==0)
-            {
+
+
+            } else if (((remaining) < 102400) && exh_flag == 0) {
                 warning2 = new NotificationCompat.Builder(DatazIntentService.this);
                 warning2.setAutoCancel(true);
                 RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.custom_push);
                 contentView.setImageViewResource(R.id.image, R.mipmap.ic_launcher);
-                contentView.setTextViewText(R.id.title, "Custom notification");
-                contentView.setTextViewText(R.id.text, "This is a custom layout");
+                contentView.setTextViewText(R.id.title, "Data Warning");
+                contentView.setTextViewText(R.id.text, "Your Data Pack is Exhausted");
                 warning2.setSmallIcon(R.drawable.mystlogo);
                 warning2.setContent(contentView);
-                warning2.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
-                Intent i = new Intent(DatazIntentService.this,MainActivity.class);
-                PendingIntent pi = PendingIntent.getActivity(DatazIntentService.this,0,i,PendingIntent.FLAG_UPDATE_CURRENT);
+                warning2.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                Intent i = new Intent(DatazIntentService.this, MainActivity.class);
+                PendingIntent pi = PendingIntent.getActivity(DatazIntentService.this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
                 warning2.setContentIntent(pi);
                 NotificationManager nm1 = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                nm1.notify(w2ID,warning2.build());
-
+                nm1.notify(w2ID, warning2.build());
 
 
                 notification.setSmallIcon(R.drawable.mystlogo);
                 notification.setContentTitle("Exhausted!");
-                notification.setContentText("Data Pack = "+bytesToHuman(DataPack));
-                notification.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
-                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    nm.notify(uID,notification.build());
+                notification.setContentText("Data Pack = " + bytesToHuman(DataPack));
+                notification.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                nm.notify(uID, notification.build());
 
                 mystSwitchData();
-                exh_flag=1;
-                dis_flag=1;
-            }
-            else if((diff<=0) && exp_flag==0)
-            {
+                exh_flag = 1;
+                dis_flag = 1;
+            } else if ((diff <= 0) && exp_flag == 0) {
                 notification.setSmallIcon(R.drawable.mystlogo);
                 notification.setContentTitle("Validity Expired!");
-                notification.setContentText("Data Pack = "+bytesToHuman(DataPack));
+                notification.setContentText("Data Pack = " + bytesToHuman(DataPack));
 
-                notification.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
-                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    nm.notify(uID,notification.build());
+                notification.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                nm.notify(uID, notification.build());
 
-                exh_flag=1;
-                dis_flag=1;
+                exh_flag = 1;
+                dis_flag = 1;
 
 
-            }
-            else if(!dataEnabled && totalbytes==0 && dis_flag==0)
-            {
+            } else if (!dataEnabled && totalbytes == 0 && dis_flag == 0) {
 
                 notification.setSmallIcon(R.drawable.mystlogo);
-                notification.setContentTitle("Rem = "+bytesToHuman(remaining));
-                notification.setContentText("Used =" +bytesToHuman(used)+" (Data is disabled)");
-                curProgress=((int)used);
-                totalProgress=(int)DataPack;
+                notification.setContentTitle("Rem = " + bytesToHuman(remaining));
+                notification.setContentText("Used =" + bytesToHuman(used) + " (Data is disabled)");
+                curProgress = ((int) used);
+                totalProgress = (int) DataPack;
                 notification.setProgress(0, 0, false);
 
-                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    nm.notify(uID,notification.build());
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                nm.notify(uID, notification.build());
 
-                    dis_flag=1;
+                dis_flag = 1;
 
 
             }
+        }
+        else  if(mystfileRead("Reset.txt").equals("1"))
+            {
+                nm.cancel(uID);
+            }
+
+
+            warning = Long.parseLong(mystfileRead("Warning.txt"));
+
+            warn_flag=Integer.parseInt(mystfileRead("Warnflag.txt"));
 
 
         }

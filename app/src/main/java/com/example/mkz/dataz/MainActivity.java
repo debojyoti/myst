@@ -18,14 +18,18 @@ package com.example.mkz.dataz;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.TrafficStats;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.FileInputStream;
@@ -57,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
     PieAngleAnimation animation;
     public  int f;
     public int time;
+    Intent intent2;
+    long diff;
+    Button recharge;
 
 
 
@@ -64,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
     {
         @Override
         public void handleMessage(Message msg) {
+
+
+
 
 
             Date d = new Date(new Date().getTime());
@@ -109,10 +119,14 @@ public class MainActivity extends AppCompatActivity {
             TextView textView6 = (TextView) findViewById(R.id.textView6);
 
 
-
+            if(mystfileRead("Warnflag.txt").equals("1"))
+            {
                 warningshow.setText("Next warning at "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
-
-
+            }
+            else
+            {
+                warningshow.setText("Next warning at "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
+            }
             /*double MBused,MBremaining,MBpack;
 
             MBpack = ((DataPack/1024)/1024);
@@ -120,9 +134,9 @@ public class MainActivity extends AppCompatActivity {
             MBused = ((used/1024)/1024);*/
 
             usedData.setText("Used : "+bytesToHuman(used));
-            if(remaining<=1000000)      // 1 mb
+            if(remaining<=104400)      // 100 kb
             {
-                dataRemaining.setText("Remainingk : Exhausted!");
+                dataRemaining.setText("Remaining : Exhausted!");
             }
             else
             {
@@ -148,6 +162,17 @@ public class MainActivity extends AppCompatActivity {
             animatedPie2.setPercentage((float)100-(float)(used*100/(DataPack/diff)));
 
 
+            if((int)remaining<102400  /*100 kb */|| diff==0)
+            {
+                recharge.setVisibility(View.VISIBLE);
+            }
+            else
+            {
+                recharge.setVisibility(View.INVISIBLE);
+            }
+
+
+
 
         }
     };
@@ -156,18 +181,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(!isMyServiceRunning(DatazIntentService.class))
+        intent2 = new Intent(MainActivity.this,DatazIntentService.class);
+        if(!isMyServiceRunning(DatazIntentService.class)  )
         {
-            Intent intent2 = new Intent(MainActivity.this,DatazIntentService.class);
+
             startService(intent2);
         }
+
+        recharge = (Button) findViewById(R.id.button2);
+
+        recharge.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this,Recharge.class);
+                startActivity(i);;
+                finish();
+            }
+        });
 
         Date d = new Date(new Date().getTime());
         String sysDate  = (String) DateFormat.format("MM-dd-yyyy", d.getTime());
         String packDate = mystfileRead("ExpDate.txt");
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
-        long diff=1;
+         diff=1;
         String days="";
         try {
             Date date1 = sdf.parse(sysDate);
@@ -215,7 +252,15 @@ public class MainActivity extends AppCompatActivity {
         animatedPie2.setInnerBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.dailyperbg));
 
         warningshow = (TextView) findViewById(R.id.textView4);
-        warningshow.setText("Next warning at "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
+
+        if(mystfileRead("Warnflag.txt").equals("1"))
+        {
+            warningshow.setText("Remaining Data is less than 1 MB!");
+        }
+        else
+        {
+            warningshow.setText("Next warning at "+bytesToHuman(Double.parseDouble(mystfileRead("Warning.txt"))));
+        }
         System.out.println("Next Warning at  "+mystfileRead("Warning.txt")+" usage");
 
 
@@ -229,8 +274,9 @@ public class MainActivity extends AppCompatActivity {
                 while (true)
                 {
                     try {
-                        Thread.sleep(1000);
                         hd1.sendEmptyMessage(0);
+
+                        Thread.sleep(1000);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -244,6 +290,58 @@ public class MainActivity extends AppCompatActivity {
         th.start();
 
     }
+
+
+
+    public void addData(View v)
+    {
+        Intent i = new Intent(MainActivity.this,AddData.class);
+        startActivity(i);
+
+    }
+
+    public void changeValidity(View v)
+    {
+        Intent i = new Intent(MainActivity.this,ChangeValidity.class);
+        startActivity(i);
+
+    }
+
+    public void resetAll(View v)
+    {
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Do you want to clear all counters");
+        // alert.setMessage("Message");
+
+        alert.setPositiveButton("Reset", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+
+                mystfileWrite("Reset.txt","1");
+
+                Intent i = new Intent(MainActivity.this,Recharge.class);
+                startActivity(i);;
+                finish();
+            }
+        });
+
+        alert.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                    }
+                });
+
+        alert.show();
+//        Intent i = new Intent(ChangeValidity.this,MainActivity.class);
+//
+//        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//
+//        startActivity(i);
+    }
+
+
+
 
 
 

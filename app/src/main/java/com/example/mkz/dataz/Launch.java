@@ -99,7 +99,7 @@ public class Launch extends AppCompatActivity {
 
 /* *****************************   Redirection code Starts ************************** */
                     Intent i;
-                    if((int)Double.parseDouble(remaining)<1024000  /*1 mb */|| cDate.equals(expDate))
+                    if((int)Double.parseDouble(remaining)<102400  /*100 kb */|| cDate.equals(expDate))
                     {
                         i = new Intent(Launch.this,Recharge.class);
                     }
